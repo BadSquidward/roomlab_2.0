@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Download, Share, Loader2, RefreshCcw } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 // Sample design result data
 const sampleDesign = {
@@ -32,23 +34,44 @@ const DesignResult = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [regenerationComment, setRegenerationComment] = useState("");
   
   // Calculate total price
   const totalPrice = sampleBOQ.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   
   // Handle regeneration of design
   const handleRegenerate = async () => {
+    // Check if user has enough tokens
+    const userInfo = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') || '{}') : null;
+    if (!userInfo || userInfo.tokens < 1) {
+      toast({
+        title: "Insufficient tokens",
+        description: "You need at least 1 token to regenerate a design. Please purchase more tokens.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
     // Simulate API call to regenerate design
     try {
       await new Promise((resolve) => setTimeout(resolve, 2000));
       
+      // Deduct 1 token from the user's balance
+      const updatedTokens = userInfo.tokens - 1;
+      localStorage.setItem('user', JSON.stringify({
+        ...userInfo,
+        tokens: updatedTokens
+      }));
+      
       toast({
         title: "Design Regenerated",
-        description: "Here's a new design based on your preferences.",
+        description: `1 token has been used. Remaining tokens: ${updatedTokens}`,
       });
       
+      // Reset the regeneration comment
+      setRegenerationComment("");
       setIsLoading(false);
     } catch (error) {
       toast({
@@ -97,6 +120,20 @@ const DesignResult = () => {
               alt="Generated Room Design"
               className="w-full h-full object-cover"
             />
+          </div>
+          
+          {/* Regeneration Comment Section */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="regenerationComment">Regeneration Comments</Label>
+              <Textarea
+                id="regenerationComment"
+                placeholder="Add specific changes you'd like in the regenerated design..."
+                value={regenerationComment}
+                onChange={(e) => setRegenerationComment(e.target.value)}
+                className="resize-none"
+              />
+            </div>
           </div>
           
           <div className="flex flex-wrap gap-4">

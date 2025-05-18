@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { ArrowRight } from "lucide-react";
@@ -44,13 +45,25 @@ const DesignPreferencesForm: React.FC<DesignPreferencesFormProps> = ({ roomType 
     style: "",
     colorScheme: "",
     budget: 50, // Medium budget by default (percentage)
-    furniture: [],
+    furniture: [] as string[],
     specialRequirements: "", // New field for additional requirements
   });
 
   // Handle input changes
   const handleChange = (field: string, value: string | number | string[]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Handle furniture selection toggle
+  const handleFurnitureToggle = (item: string) => {
+    setFormData((prev) => {
+      const currentFurniture = [...prev.furniture];
+      if (currentFurniture.includes(item)) {
+        return { ...prev, furniture: currentFurniture.filter((i) => i !== item) };
+      } else {
+        return { ...prev, furniture: [...currentFurniture, item] };
+      }
+    });
   };
 
   // Handle form submission
@@ -72,6 +85,17 @@ const DesignPreferencesForm: React.FC<DesignPreferencesFormProps> = ({ roomType 
       });
       return;
     }
+
+    // Check if user has enough tokens
+    const userInfo = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') || '{}') : null;
+    if (!userInfo || userInfo.tokens < 1) {
+      toast({
+        title: "Insufficient tokens",
+        description: "You need at least 1 token to generate a design. Please purchase more tokens.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setIsLoading(true);
     
@@ -79,11 +103,20 @@ const DesignPreferencesForm: React.FC<DesignPreferencesFormProps> = ({ roomType 
     try {
       await new Promise((resolve) => setTimeout(resolve, 2000));
       
-      // In a real implementation, you would:
-      // 1. Send the form data to your API
-      // 2. Generate the design using AI
-      // 3. Redirect to the results page
+      // Deduct 1 token from the user's balance
+      const updatedTokens = userInfo.tokens - 1;
+      localStorage.setItem('user', JSON.stringify({
+        ...userInfo,
+        tokens: updatedTokens
+      }));
       
+      // Show success toast with token deduction
+      toast({
+        title: "Design Generated",
+        description: `1 token has been used. Remaining tokens: ${updatedTokens}`,
+      });
+      
+      // Navigate to the results page
       navigate(`/design-generation/${roomType}/result`);
     } catch (error) {
       toast({
@@ -304,30 +337,29 @@ const DesignPreferencesForm: React.FC<DesignPreferencesFormProps> = ({ roomType 
           </div>
         </div>
         
-        {/* Furniture Preferences */}
+        {/* Furniture Preferences - Updated to use checkboxes */}
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Furniture Preferences</h3>
           <p className="text-sm text-muted-foreground">
             Select specific furniture items you'd like to include in your design
           </p>
-          <Select 
-            value={formData.furniture.join(",")} 
-            onValueChange={(value) => handleChange("furniture", value.split(",").filter(Boolean))}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select furniture items" />
-            </SelectTrigger>
-            <SelectContent>
-              {getFurnitureOptions().map((item) => (
-                <SelectItem key={item} value={item}>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {getFurnitureOptions().map((item) => (
+              <div key={item} className="flex items-center space-x-2">
+                <Checkbox 
+                  id={`furniture-${item}`} 
+                  checked={formData.furniture.includes(item)}
+                  onCheckedChange={() => handleFurnitureToggle(item)}
+                />
+                <Label htmlFor={`furniture-${item}`} className="cursor-pointer">
                   {item}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+                </Label>
+              </div>
+            ))}
+          </div>
         </div>
         
-        {/* Special Requirements - NEW SECTION */}
+        {/* Special Requirements */}
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Special Requirements</h3>
           <p className="text-sm text-muted-foreground">
