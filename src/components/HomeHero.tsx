@@ -1,9 +1,29 @@
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const HomeHero = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  // Check if user is authenticated - in a real app this would come from auth context
+  const isAuthenticated = !!localStorage.getItem('user');
+  
+  const handleStartDesigning = () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Login Required",
+        description: "Please sign in to start designing",
+      });
+      navigate("/login");
+      return;
+    }
+    
+    navigate("/design-generation");
+  };
+
   return (
     <section className="py-16 md:py-24">
       <div className="container px-4 md:px-6">
@@ -18,10 +38,8 @@ const HomeHero = () => {
               </p>
             </div>
             <div className="flex flex-col gap-2 min-[400px]:flex-row">
-              <Button asChild size="lg" className="gap-1">
-                <Link to="/design-generation">
-                  Start Designing <ArrowRight className="h-4 w-4 ml-1" />
-                </Link>
+              <Button size="lg" className="gap-1" onClick={handleStartDesigning}>
+                Start Designing <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
               <Button asChild size="lg" variant="outline">
                 <Link to="/designs">View Popular Designs</Link>

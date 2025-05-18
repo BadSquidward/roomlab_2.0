@@ -3,7 +3,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
+import { ReactNode, useEffect } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/LoginPage";
@@ -18,8 +19,23 @@ import DesignsPage from "./pages/DesignsPage";
 
 const queryClient = new QueryClient();
 
-// This would come from your auth context in a real app
-const isAuthenticated = false;
+// Protected route wrapper
+const ProtectedRoute = ({ children }: { children: ReactNode }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Check if user is authenticated
+  const isAuthenticated = !!localStorage.getItem('user');
+  
+  useEffect(() => {
+    if (!isAuthenticated) {
+      // Redirect to login page with return url
+      navigate('/login', { state: { from: location.pathname } });
+    }
+  }, [isAuthenticated, navigate, location]);
+  
+  return isAuthenticated ? <>{children}</> : null;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -35,12 +51,47 @@ const App = () => (
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/designs" element={<DesignsPage />} />
           
-          {/* Protected routes - in a real app, these would check authentication status */}
-          <Route path="/profile" element={<UserProfilePage />} />
-          <Route path="/design-generation" element={<DesignGeneration />} />
-          <Route path="/design-generation/:roomType" element={<DesignPreferences />} />
-          <Route path="/design-generation/:roomType/result" element={<DesignResultPage />} />
-          <Route path="/tokens" element={<TokensPage />} />
+          {/* Protected routes */}
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute>
+                <UserProfilePage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/design-generation" 
+            element={
+              <ProtectedRoute>
+                <DesignGeneration />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/design-generation/:roomType" 
+            element={
+              <ProtectedRoute>
+                <DesignPreferences />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/design-generation/:roomType/result" 
+            element={
+              <ProtectedRoute>
+                <DesignResultPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/tokens" 
+            element={
+              <ProtectedRoute>
+                <TokensPage />
+              </ProtectedRoute>
+            } 
+          />
           
           {/* Catch all */}
           <Route path="*" element={<NotFound />} />

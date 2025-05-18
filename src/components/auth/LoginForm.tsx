@@ -39,16 +39,23 @@ const LoginForm = () => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500));
       
+      // Extract username from email for welcome message
+      const name = formData.email.split('@')[0];
+      
+      // Save user data to localStorage
+      const userData = {
+        email: formData.email,
+        name: name,
+        tokens: 3, // Default tokens for new users
+      };
+      
+      localStorage.setItem('user', JSON.stringify(userData));
+      
       // Mock success
       toast({
-        title: "Welcome back!",
+        title: `Welcome, ${name}!`,
         description: "You've successfully logged in.",
       });
-      
-      // In a real implementation, you would:
-      // 1. Authenticate the user
-      // 2. Store the auth token
-      // 3. Redirect to the app
       
       // Redirect to user profile page after successful login
       navigate("/profile");

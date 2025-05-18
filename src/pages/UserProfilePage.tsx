@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -9,14 +9,34 @@ import { useToast } from "@/components/ui/use-toast";
 import { Coins, ArrowRight } from "lucide-react";
 
 const UserProfilePage = () => {
-  // In a real app, this would come from an auth context or API
-  const [user, setUser] = useState({
-    name: "Alex", // Example name
-    tokens: 3,    // Example token balance
-  });
-  
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  const [user, setUser] = useState({
+    name: "",
+    tokens: 0,
+  });
+  
+  // Get user data from localStorage
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    
+    if (userData) {
+      const parsedUser = JSON.parse(userData);
+      setUser({
+        name: parsedUser.name || "User",
+        tokens: parsedUser.tokens || 0,
+      });
+    } else {
+      // Redirect to login if no user data is found
+      toast({
+        title: "Login Required",
+        description: "Please log in to access your profile",
+        variant: "destructive",
+      });
+      navigate("/login");
+    }
+  }, [navigate, toast]);
 
   const handleGenerateClick = () => {
     // Check if user has enough tokens

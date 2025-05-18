@@ -6,10 +6,10 @@ const Logo: React.FC = () => {
     <div className="flex items-center">
       <img 
         src="/lovable-uploads/a0191eed-08b6-4ed7-9b7a-cc8f4b95049d.png" 
-        alt="Design Lab Logo" 
+        alt="RoomLab Logo" 
         className="w-10 h-10 mr-2" 
       />
-      <span className="text-xl font-semibold text-brand-600">DesignLab</span>
+      <span className="text-xl font-semibold text-brand-600">RoomLab</span>
     </div>
   );
 };
