@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Download, Share, Loader2, RefreshCcw } from "lucide-react";
+import { Download, Share, Loader2, RefreshCcw, Phone } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -33,7 +33,7 @@ const DesignResult = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [isContacting, setIsContacting] = useState(false);
   const [regenerationComment, setRegenerationComment] = useState("");
   
   // Calculate total price
@@ -83,23 +83,19 @@ const DesignResult = () => {
     }
   };
   
-  // Handle BOQ download
-  const handleDownloadBOQ = async () => {
-    setIsDownloading(true);
+  // Handle contacting sales
+  const handleContactSales = async () => {
+    setIsContacting(true);
     
-    // Simulate download delay
+    // Simulate contact delay
     await new Promise((resolve) => setTimeout(resolve, 1500));
     
     toast({
-      title: "BOQ Downloaded",
-      description: "Your bill of quantities has been downloaded.",
+      title: "Sales Request Sent",
+      description: "Our sales team will contact you shortly regarding your design inquiry.",
     });
     
-    setIsDownloading(false);
-    
-    // In a real implementation, you would:
-    // 1. Generate a PDF document with the BOQ data
-    // 2. Trigger a download of the PDF file
+    setIsContacting(false);
   };
   
   return (
@@ -154,16 +150,16 @@ const DesignResult = () => {
               <Share className="h-4 w-4" />
               Share Design
             </Button>
-            <Button variant="outline" className="gap-2" onClick={handleDownloadBOQ} disabled={isDownloading}>
-              {isDownloading ? (
+            <Button variant="outline" className="gap-2" onClick={handleContactSales} disabled={isContacting}>
+              {isContacting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Downloading...
+                  Contacting...
                 </>
               ) : (
                 <>
-                  <Download className="h-4 w-4" />
-                  Download BOQ
+                  <Phone className="h-4 w-4" />
+                  Contact Sales
                 </>
               )}
             </Button>
@@ -196,13 +192,13 @@ const DesignResult = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-lg">Bill of Quantities</h3>
-            <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={handleDownloadBOQ} disabled={isDownloading}>
-              {isDownloading ? (
+            <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={handleContactSales} disabled={isContacting}>
+              {isContacting ? (
                 <Loader2 className="h-3 w-3 animate-spin mr-1" />
               ) : (
-                <Download className="h-3 w-3 mr-1" />
+                <Phone className="h-3 w-3 mr-1" />
               )}
-              Export PDF
+              Contact Sales
             </Button>
           </div>
           
@@ -220,14 +216,14 @@ const DesignResult = () => {
                   <div className="col-span-6">{item.name}</div>
                   <div className="col-span-3 text-xs text-muted-foreground">{item.dimensions}</div>
                   <div className="col-span-1">{item.quantity}</div>
-                  <div className="col-span-2 text-right">${item.price}</div>
+                  <div className="col-span-2 text-right">฿{item.price}</div>
                 </div>
               ))}
             </div>
             
             <div className="bg-gray-50 p-3 border-t grid grid-cols-12 text-sm font-medium">
               <div className="col-span-10">Total Estimated Cost</div>
-              <div className="col-span-2 text-right">${totalPrice}</div>
+              <div className="col-span-2 text-right">฿{totalPrice}</div>
             </div>
           </div>
           
