@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
 
 const SignUpForm = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -52,12 +53,13 @@ const SignUpForm = () => {
       // Mock success
       toast({
         title: "Account created!",
-        description: "You've received 3 free tokens to start designing.",
+        description: "You've received 3 free tokens to start designing. Please login to continue.",
       });
       
       // In a real implementation, you would:
       // 1. Create the user in your auth system
-      // 2. Redirect to login or directly to the app
+      // 2. Redirect to login page after successful registration
+      navigate("/login");
       
     } catch (error) {
       toast({

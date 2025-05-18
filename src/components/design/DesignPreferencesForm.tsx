@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { ArrowRight } from "lucide-react";
 
@@ -45,6 +45,7 @@ const DesignPreferencesForm: React.FC<DesignPreferencesFormProps> = ({ roomType 
     colorScheme: "",
     budget: 50, // Medium budget by default (percentage)
     furniture: [],
+    specialRequirements: "", // New field for additional requirements
   });
 
   // Handle input changes
@@ -324,6 +325,20 @@ const DesignPreferencesForm: React.FC<DesignPreferencesFormProps> = ({ roomType 
               ))}
             </SelectContent>
           </Select>
+        </div>
+        
+        {/* Special Requirements - NEW SECTION */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Special Requirements</h3>
+          <p className="text-sm text-muted-foreground">
+            Add any specific requirements or details you'd like to include in your design
+          </p>
+          <Textarea
+            placeholder="E.g., I need a home office corner in my living room, or I want to incorporate plants and natural elements..."
+            value={formData.specialRequirements}
+            onChange={(e) => handleChange("specialRequirements", e.target.value)}
+            className="min-h-[100px]"
+          />
         </div>
         
         <Button type="submit" disabled={isLoading} className="w-full sm:w-auto gap-1">

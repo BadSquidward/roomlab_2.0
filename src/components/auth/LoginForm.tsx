@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
 
 const LoginForm = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -48,6 +49,9 @@ const LoginForm = () => {
       // 1. Authenticate the user
       // 2. Store the auth token
       // 3. Redirect to the app
+      
+      // Redirect to user profile page after successful login
+      navigate("/profile");
       
     } catch (error) {
       toast({
