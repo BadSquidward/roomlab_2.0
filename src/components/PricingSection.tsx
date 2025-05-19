@@ -6,7 +6,7 @@ const PricingSection = () => {
   const tokenPackages = [
     {
       name: "Starter",
-      price: 9.99,
+      price: 349,
       tokens: 5,
       features: [
         "5 Room Design Generations",
@@ -18,7 +18,7 @@ const PricingSection = () => {
     },
     {
       name: "Pro",
-      price: 24.99,
+      price: 890,
       tokens: 15,
       features: [
         "15 Room Design Generations",
@@ -32,7 +32,7 @@ const PricingSection = () => {
     },
     {
       name: "Premium",
-      price: 49.99,
+      price: 1790,
       tokens: 35,
       features: [
         "35 Room Design Generations",
@@ -74,7 +74,7 @@ const PricingSection = () => {
               <div className="p-6">
                 <h3 className="text-xl font-semibold mb-2">{pkg.name}</h3>
                 <div className="mb-4">
-                  <span className="text-4xl font-bold">${pkg.price}</span>
+                  <span className="text-4xl font-bold">฿{pkg.price}</span>
                 </div>
                 <p className="mb-6 pb-6 border-b text-sm text-muted-foreground">
                   {pkg.tokens} tokens for generating unique room designs

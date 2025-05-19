@@ -16,6 +16,9 @@ import DesignResultPage from "./pages/DesignResultPage";
 import TokensPage from "./pages/TokensPage";
 import PricingPage from "./pages/PricingPage";
 import DesignsPage from "./pages/DesignsPage";
+import ContactUsPage from "./pages/ContactUsPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import TermsOfServicePage from "./pages/TermsOfServicePage";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +53,9 @@ const App = () => (
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/designs" element={<DesignsPage />} />
+          <Route path="/contact" element={<ContactUsPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
+          <Route path="/terms" element={<TermsOfServicePage />} />
           
           {/* Protected routes */}
           <Route 

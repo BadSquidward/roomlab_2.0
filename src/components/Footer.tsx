@@ -70,7 +70,7 @@ const Footer = () => {
         
         <div className="mt-12 pt-6 border-t">
           <p className="text-muted-foreground text-sm text-center">
-            © {new Date().getFullYear()} DesignLab. All rights reserved.
+            © {new Date().getFullYear()} RoomLab. All rights reserved.
           </p>
         </div>
       </div>

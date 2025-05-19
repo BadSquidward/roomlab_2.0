@@ -19,14 +19,14 @@ const sampleDesign = {
 
 // Sample BOQ data
 const sampleBOQ = [
-  { name: "Modern Gray Sofa", dimensions: "220 × 85 × 80 cm", quantity: 1, price: 1299 },
-  { name: "Coffee Table - Oak", dimensions: "120 × 60 × 45 cm", quantity: 1, price: 449 },
-  { name: "Side Table", dimensions: "45 × 45 × 55 cm", quantity: 2, price: 129 },
-  { name: "Floor Lamp", dimensions: "35 × 35 × 165 cm", quantity: 1, price: 199 },
-  { name: "Area Rug - Light Gray", dimensions: "200 × 300 cm", quantity: 1, price: 349 },
-  { name: "Wall Art Set", dimensions: "50 × 70 cm", quantity: 3, price: 89 },
-  { name: "Decorative Cushions", dimensions: "45 × 45 cm", quantity: 4, price: 39 },
-  { name: "Bookshelf", dimensions: "90 × 30 × 180 cm", quantity: 1, price: 599 },
+  { name: "Modern Gray Sofa", dimensions: "220 × 85 × 80 cm", quantity: 1, price: 29990 },
+  { name: "Coffee Table - Oak", dimensions: "120 × 60 × 45 cm", quantity: 1, price: 15490 },
+  { name: "Side Table", dimensions: "45 × 45 × 55 cm", quantity: 2, price: 4990 },
+  { name: "Floor Lamp", dimensions: "35 × 35 × 165 cm", quantity: 1, price: 6890 },
+  { name: "Area Rug - Light Gray", dimensions: "200 × 300 cm", quantity: 1, price: 12990 },
+  { name: "Wall Art Set", dimensions: "50 × 70 cm", quantity: 3, price: 2990 },
+  { name: "Decorative Cushions", dimensions: "45 × 45 cm", quantity: 4, price: 1290 },
+  { name: "Bookshelf", dimensions: "90 × 30 × 180 cm", quantity: 1, price: 18990 },
 ];
 
 const DesignResult = () => {
@@ -49,6 +49,7 @@ const DesignResult = () => {
         description: "You need at least 1 token to regenerate a design. Please purchase more tokens.",
         variant: "destructive",
       });
+      navigate("/tokens");
       return;
     }
     
@@ -216,14 +217,14 @@ const DesignResult = () => {
                   <div className="col-span-6">{item.name}</div>
                   <div className="col-span-3 text-xs text-muted-foreground">{item.dimensions}</div>
                   <div className="col-span-1">{item.quantity}</div>
-                  <div className="col-span-2 text-right">฿{item.price}</div>
+                  <div className="col-span-2 text-right">฿{item.price.toLocaleString()}</div>
                 </div>
               ))}
             </div>
             
             <div className="bg-gray-50 p-3 border-t grid grid-cols-12 text-sm font-medium">
               <div className="col-span-10">Total Estimated Cost</div>
-              <div className="col-span-2 text-right">฿{totalPrice}</div>
+              <div className="col-span-2 text-right">฿{totalPrice.toLocaleString()}</div>
             </div>
           </div>
           

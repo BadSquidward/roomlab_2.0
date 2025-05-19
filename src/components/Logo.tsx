@@ -5,7 +5,7 @@ const Logo: React.FC = () => {
   return (
     <div className="flex items-center">
       <img 
-        src="/lovable-uploads/a0191eed-08b6-4ed7-9b7a-cc8f4b95049d.png" 
+        src="/lovable-uploads/9dad30b7-3b8b-45b5-a198-e8289b6324f0.png" 
         alt="RoomLab Logo" 
         className="w-10 h-10 mr-2" 
       />

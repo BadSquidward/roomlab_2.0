@@ -1,33 +1,51 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { Coins, CreditCard, AlertCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const TokenManager = () => {
   const { toast } = useToast();
-  const [userTokens, setUserTokens] = useState(3); // Example: User has 3 tokens
+  const navigate = useNavigate();
+  const [userInfo, setUserInfo] = useState<{ tokens: number, name: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Load user data from localStorage
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setUserInfo(parsedUser);
+    } else {
+      navigate('/login');
+      toast({
+        title: "Authentication required",
+        description: "Please login to manage your tokens",
+        variant: "destructive"
+      });
+    }
+  }, [navigate, toast]);
 
   // Sample token packages
   const tokenPackages = [
     {
       id: "tokens-5",
       amount: 5,
-      price: 9.99,
+      price: 349,
       popular: false,
     },
     {
       id: "tokens-15",
       amount: 15,
-      price: 24.99,
+      price: 890,
       popular: true,
     },
     {
       id: "tokens-35",
       amount: 35,
-      price: 49.99,
+      price: 1790,
       popular: false,
     },
   ];
@@ -35,7 +53,7 @@ const TokenManager = () => {
   // Simulate token purchase
   const handlePurchaseTokens = async (packageId: string) => {
     const selectedPackage = tokenPackages.find((pkg) => pkg.id === packageId);
-    if (!selectedPackage) return;
+    if (!selectedPackage || !userInfo) return;
     
     setIsLoading(true);
     
@@ -43,8 +61,15 @@ const TokenManager = () => {
       // Simulate API request
       await new Promise((resolve) => setTimeout(resolve, 1500));
       
-      // Update user tokens (in a real app, this would happen on the backend)
-      setUserTokens((prev) => prev + selectedPackage.amount);
+      // Update user tokens in state and localStorage
+      const updatedTokens = userInfo.tokens + selectedPackage.amount;
+      const updatedUserInfo = { ...userInfo, tokens: updatedTokens };
+      
+      // Update localStorage
+      localStorage.setItem('user', JSON.stringify(updatedUserInfo));
+      
+      // Update state
+      setUserInfo(updatedUserInfo);
       
       toast({
         title: "Purchase successful!",
@@ -60,6 +85,10 @@ const TokenManager = () => {
       setIsLoading(false);
     }
   };
+
+  if (!userInfo) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="space-y-8">
@@ -83,11 +112,11 @@ const TokenManager = () => {
           </div>
         </div>
         <div className="text-4xl font-bold text-brand-600">
-          {userTokens}
+          {userInfo.tokens}
         </div>
       </div>
       
-      {userTokens === 0 && (
+      {userInfo.tokens === 0 && (
         <Card className="border-yellow-200 bg-yellow-50">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2">
@@ -128,7 +157,7 @@ const TokenManager = () => {
               
               <CardContent>
                 <div className="mb-4">
-                  <span className="text-2xl font-bold">${pkg.price}</span>
+                  <span className="text-2xl font-bold">฿{pkg.price}</span>
                 </div>
                 
                 <Button 

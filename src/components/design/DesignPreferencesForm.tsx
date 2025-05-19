@@ -33,20 +33,28 @@ const colorSchemes = [
 
 interface DesignPreferencesFormProps {
   roomType: string;
+  selectedStyle: string | null;
 }
 
-const DesignPreferencesForm: React.FC<DesignPreferencesFormProps> = ({ roomType }) => {
+const DesignPreferencesForm: React.FC<DesignPreferencesFormProps> = ({ roomType, selectedStyle }) => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     length: "4",
     width: "3",
     height: "2.5",
-    style: "",
+    style: selectedStyle || "",
     colorScheme: "",
     budget: 50, // Medium budget by default (percentage)
     furniture: [] as string[],
     specialRequirements: "", // New field for additional requirements
+  });
+
+  // Update style when selectedStyle prop changes
+  useState(() => {
+    if (selectedStyle && selectedStyle !== formData.style) {
+      setFormData(prev => ({ ...prev, style: selectedStyle }));
+    }
   });
 
   // Handle input changes
@@ -64,6 +72,17 @@ const DesignPreferencesForm: React.FC<DesignPreferencesFormProps> = ({ roomType 
         return { ...prev, furniture: [...currentFurniture, item] };
       }
     });
+  };
+
+  // Budget to price range
+  const getBudgetText = () => {
+    if (formData.budget <= 33) {
+      return "฿100,000 - ฿300,000";
+    } else if (formData.budget <= 66) {
+      return "฿300,001 - ฿600,000";
+    } else {
+      return "฿600,001+";
+    }
   };
 
   // Handle form submission
@@ -94,6 +113,7 @@ const DesignPreferencesForm: React.FC<DesignPreferencesFormProps> = ({ roomType 
         description: "You need at least 1 token to generate a design. Please purchase more tokens.",
         variant: "destructive",
       });
+      navigate("/tokens");
       return;
     }
     
@@ -329,10 +349,10 @@ const DesignPreferencesForm: React.FC<DesignPreferencesFormProps> = ({ roomType 
               onValueChange={(value) => handleChange("budget", value[0])}
               className="w-full"
             />
-            <div className="flex justify-between text-sm text-muted-foreground">
-              <span>Economic</span>
-              <span>Mid-range</span>
-              <span>Luxury</span>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Economic</span>
+              <span className="font-medium">{getBudgetText()}</span>
+              <span className="text-muted-foreground">Luxury</span>
             </div>
           </div>
         </div>
