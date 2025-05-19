@@ -1,181 +1,145 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
-import { Coins, CreditCard, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { CheckCircle, Coins, RefreshCw } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 
 const TokenManager = () => {
-  const { toast } = useToast();
   const navigate = useNavigate();
-  const [userInfo, setUserInfo] = useState<{ tokens: number, name: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Load user data from localStorage
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUserInfo(parsedUser);
-    } else {
-      navigate('/login');
-      toast({
-        title: "Authentication required",
-        description: "Please login to manage your tokens",
-        variant: "destructive"
-      });
-    }
-  }, [navigate, toast]);
-
-  // Sample token packages
+  
+  // Get user info from localStorage
+  const userInfo = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') || '{}') : { tokens: 0 };
+  const [userTokens, setUserTokens] = useState(userInfo.tokens || 0);
+  
   const tokenPackages = [
-    {
-      id: "tokens-5",
-      amount: 5,
-      price: 349,
-      popular: false,
-    },
-    {
-      id: "tokens-15",
-      amount: 15,
-      price: 890,
-      popular: true,
-    },
-    {
-      id: "tokens-35",
-      amount: 35,
-      price: 1790,
-      popular: false,
-    },
+    { id: "starter", name: "Starter", tokens: 5, price: 349 },
+    { id: "pro", name: "Pro", tokens: 15, price: 890 },
+    { id: "premium", name: "Premium", tokens: 35, price: 1790 },
   ];
-
-  // Simulate token purchase
-  const handlePurchaseTokens = async (packageId: string) => {
-    const selectedPackage = tokenPackages.find((pkg) => pkg.id === packageId);
-    if (!selectedPackage || !userInfo) return;
-    
+  
+  const handlePurchase = async (packageData: { id: string, tokens: number }) => {
     setIsLoading(true);
     
+    // Simulate payment process
     try {
-      // Simulate API request
       await new Promise((resolve) => setTimeout(resolve, 1500));
       
-      // Update user tokens in state and localStorage
-      const updatedTokens = userInfo.tokens + selectedPackage.amount;
-      const updatedUserInfo = { ...userInfo, tokens: updatedTokens };
+      // Update user tokens
+      const newTokens = userTokens + packageData.tokens;
+      setUserTokens(newTokens);
       
-      // Update localStorage
-      localStorage.setItem('user', JSON.stringify(updatedUserInfo));
-      
-      // Update state
-      setUserInfo(updatedUserInfo);
+      // Save to localStorage
+      localStorage.setItem('user', JSON.stringify({
+        ...userInfo,
+        tokens: newTokens
+      }));
       
       toast({
-        title: "Purchase successful!",
-        description: `You've added ${selectedPackage.amount} tokens to your account.`,
+        title: "Purchase Successful",
+        description: `You've added ${packageData.tokens} tokens to your account.`,
       });
+      
+      setIsLoading(false);
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to process payment. Please try again.",
+        title: "Purchase Failed",
+        description: "There was an error processing your payment. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };
-
-  if (!userInfo) {
-    return <div>Loading...</div>;
-  }
-
+  
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold">Your Tokens</h2>
+        <h2 className="text-2xl font-bold">Token Management</h2>
         <p className="text-muted-foreground mt-1">
-          Manage your design tokens and purchase more when needed
+          Purchase and manage your design generation tokens
         </p>
       </div>
       
-      <div className="flex items-center justify-between p-6 rounded-lg bg-gradient-to-r from-brand-50 to-blue-50 border">
-        <div className="flex items-center gap-4">
-          <div className="p-3 rounded-full bg-brand-100">
-            <Coins className="h-6 w-6 text-brand-600" />
-          </div>
-          <div>
-            <h3 className="text-lg font-medium">Available Tokens</h3>
-            <p className="text-sm text-muted-foreground">
-              Use tokens to generate new designs
+      {/* Current Token Balance */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <h3 className="text-lg font-medium">Current Balance</h3>
+            <p className="text-3xl font-bold flex items-center">
+              <Coins className="h-5 w-5 mr-2 text-yellow-500" />
+              {userTokens} Tokens
             </p>
           </div>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => {
+              setUserTokens(userInfo.tokens);
+              toast({
+                title: "Balance Refreshed",
+                description: "Your token balance has been refreshed.",
+              });
+            }}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh Balance
+          </Button>
         </div>
-        <div className="text-4xl font-bold text-brand-600">
-          {userInfo.tokens}
-        </div>
-      </div>
+      </Card>
       
-      {userInfo.tokens === 0 && (
-        <Card className="border-yellow-200 bg-yellow-50">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-yellow-500" />
-              <span>No Tokens Available</span>
-            </CardTitle>
-            <CardDescription>
-              You've used all your tokens. Purchase more to continue generating designs.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      )}
-      
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium">Purchase Tokens</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {tokenPackages.map((pkg) => (
-            <Card 
-              key={pkg.id}
-              className={pkg.popular ? "border-brand-300" : ""}
+      {/* Token Packages */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {tokenPackages.map((pkg) => (
+          <Card key={pkg.id} className="p-6 flex flex-col">
+            <div className="mb-4">
+              <h3 className="text-xl font-semibold">{pkg.name}</h3>
+              <p className="text-muted-foreground">{pkg.tokens} Tokens</p>
+            </div>
+            <div className="text-3xl font-bold mb-6">
+              ฿{pkg.price.toLocaleString()}
+            </div>
+            <ul className="mb-6 space-y-2 flex-grow">
+              <li className="flex items-center">
+                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                <span className="text-sm">{pkg.tokens} Room Design Generations</span>
+              </li>
+              <li className="flex items-center">
+                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                <span className="text-sm">High-Quality Renderings</span>
+              </li>
+              <li className="flex items-center">
+                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                <span className="text-sm">Detailed Bill of Quantities</span>
+              </li>
+            </ul>
+            <Button 
+              onClick={() => handlePurchase(pkg)} 
+              disabled={isLoading}
+              className="w-full"
             >
-              {pkg.popular && (
-                <div className="bg-brand-500 text-white text-xs font-medium px-3 py-1 absolute top-0 right-0 rounded-bl-lg rounded-tr-lg">
-                  Most Popular
-                </div>
-              )}
-              
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Coins className="h-5 w-5 text-brand-500" />
-                  {pkg.amount} Tokens
-                </CardTitle>
-                <CardDescription>
-                  Generate {pkg.amount} unique room designs
-                </CardDescription>
-              </CardHeader>
-              
-              <CardContent>
-                <div className="mb-4">
-                  <span className="text-2xl font-bold">฿{pkg.price}</span>
-                </div>
-                
-                <Button 
-                  className="w-full gap-2"
-                  onClick={() => handlePurchaseTokens(pkg.id)}
-                  disabled={isLoading}
-                >
-                  <CreditCard className="h-4 w-4" />
-                  Buy Now
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              {isLoading ? "Processing..." : "Purchase"}
+            </Button>
+          </Card>
+        ))}
+      </div>
+
+      {/* Added button to return to design generation */}
+      <div className="flex justify-center mt-8">
+        <Button 
+          variant="outline" 
+          className="mr-4"
+          onClick={() => navigate("/design-generation")}
+        >
+          Return to Room Selection
+        </Button>
         
-        <p className="text-xs text-muted-foreground text-center mt-4">
-          Secure payment processing. Your payment information is never stored on our servers.
-        </p>
+        <Button 
+          onClick={() => navigate(-1)}
+        >
+          Continue Your Design
+        </Button>
       </div>
     </div>
   );

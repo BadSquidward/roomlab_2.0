@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -77,11 +76,11 @@ const DesignPreferencesForm: React.FC<DesignPreferencesFormProps> = ({ roomType,
   // Budget to price range
   const getBudgetText = () => {
     if (formData.budget <= 33) {
-      return "฿100,000 - ฿300,000";
+      return "฿10,000 - ฿300,000";
     } else if (formData.budget <= 66) {
       return "฿300,001 - ฿600,000";
     } else {
-      return "฿600,001+";
+      return "฿600,001 - ฿1,000,000";
     }
   };
 

@@ -16,35 +16,35 @@ const popularDesigns = [
     id: 1,
     title: "Modern Minimalist Living Room",
     image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=1000&auto=format&fit=crop",
-    style: "Modern",
+    style: "modern",
     likes: 245
   },
   {
     id: 2,
     title: "Scandinavian Bedroom",
     image: "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?q=80&w=1000&auto=format&fit=crop",
-    style: "Scandinavian",
+    style: "scandinavian",
     likes: 189
   },
   {
     id: 3,
     title: "Industrial Style Office",
     image: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1000&auto=format&fit=crop",
-    style: "Industrial",
+    style: "industrial",
     likes: 172
   },
   {
     id: 4,
     title: "Bohemian Living Space",
     image: "https://images.unsplash.com/photo-1585128903994-9788298ef4b3?q=80&w=1000&auto=format&fit=crop",
-    style: "Bohemian",
+    style: "bohemian",
     likes: 156
   },
   {
     id: 5,
     title: "Contemporary Kitchen",
     image: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?q=80&w=1000&auto=format&fit=crop",
-    style: "Contemporary",
+    style: "contemporary",
     likes: 143
   }
 ];
@@ -55,6 +55,38 @@ type PopularDesignsCarouselProps = {
 
 const PopularDesignsCarousel = ({ onSelectDesign }: PopularDesignsCarouselProps) => {
   const navigate = useNavigate();
+
+  // Handle viewing design result directly
+  const handleViewDesignResult = (style: string) => {
+    // Check if user has tokens
+    const userInfo = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') || '{}') : null;
+    
+    if (!userInfo || userInfo.tokens < 1) {
+      // Redirect to tokens page if no tokens
+      navigate("/tokens");
+      return;
+    }
+    
+    // Save style preference to localStorage for the results page to use
+    localStorage.setItem('selectedDesign', JSON.stringify({
+      style: style,
+      useDirectResult: true
+    }));
+    
+    // Deduct token
+    const updatedTokens = userInfo.tokens - 1;
+    localStorage.setItem('user', JSON.stringify({
+      ...userInfo,
+      tokens: updatedTokens
+    }));
+    
+    // Get the current path to extract room type
+    const path = window.location.pathname;
+    const roomType = path.split('/').pop() || "living-room";
+    
+    // Navigate to result page
+    navigate(`/design-generation/${roomType}/result`);
+  };
 
   return (
     <div className="space-y-4 mb-8">
@@ -85,9 +117,14 @@ const PopularDesignsCarousel = ({ onSelectDesign }: PopularDesignsCarouselProps)
                 </div>
                 <CardContent className="p-4">
                   <h3 className="font-semibold">{design.title}</h3>
-                  <Button variant="link" className="p-0 h-auto mt-2 text-brand-500" onClick={() => onSelectDesign(design.style)}>
-                    Use This Style
-                  </Button>
+                  <div className="flex space-x-2 mt-2">
+                    <Button variant="link" className="p-0 h-auto text-brand-500" onClick={() => onSelectDesign(design.style)}>
+                      Use This Style
+                    </Button>
+                    <Button variant="link" className="p-0 h-auto text-brand-500" onClick={() => handleViewDesignResult(design.style)}>
+                      View Design Result
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </CarouselItem>
