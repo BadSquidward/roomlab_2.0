@@ -434,9 +434,9 @@ export function getAIProvider(providerName: string, apiKey: string, model?: stri
   }
 }
 
-// Updated default API keys with the provided Gemini API key
+// Updated default API keys with the new Gemini API key
 export const defaultApiKeys = {
   openai: "sk-your-openai-api-key", // Replace with your actual API key
   stabilityai: "sk-your-stability-api-key", // Replace with your actual API key
-  gemini: "AIzaSyAnPSoK8-HdXCLgfUc0KSgETtuewWRzsic" // Updated Gemini API key
+  gemini: "AIzaSyA5WAO7LtMrT9BvUkR_3t7lrDRTsOeBm0g" // Updated Gemini API key
 };
