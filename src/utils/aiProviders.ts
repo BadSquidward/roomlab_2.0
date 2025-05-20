@@ -1,4 +1,3 @@
-
 // AI Provider Integration Utilities
 
 export interface DesignGenerationRequest {
@@ -211,23 +210,7 @@ export class GeminiProvider extends AIProvider {
             topK: 32,
             topP: 1,
             maxOutputTokens: 2048
-          },
-          tools: [{
-            functionDeclarations: [{
-              name: "generate_image",
-              description: "Generate an interior design image based on the specifications",
-              parameters: {
-                type: "OBJECT",
-                properties: {
-                  prompt: {
-                    type: "STRING",
-                    description: "The prompt to generate the image from"
-                  }
-                },
-                required: ["prompt"]
-              }
-            }]
-          }]
+          }
         })
       });
 
@@ -260,37 +243,6 @@ export class GeminiProvider extends AIProvider {
             // Extract text if available
             else if (part.text) {
               caption += part.text;
-            }
-            // Check for tool calls that might contain the image
-            else if (part.functionCall && part.functionCall.name === "generate_image") {
-              const functionArgs = JSON.parse(part.functionCall.args.prompt || "{}");
-              if (functionArgs.prompt) {
-                // Store the prompt as caption if no other text is available
-                if (!caption) {
-                  caption = functionArgs.prompt;
-                }
-              }
-            }
-          }
-        }
-        
-        // Handle tool responses if present
-        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
-          const parts = data.candidates[0].content.parts;
-          
-          for (const part of parts) {
-            if (part.functionCall && part.functionCall.name === "generate_image") {
-              // If we have a function call but no image yet, we need to make a follow-up call
-              if (!imageUrl) {
-                const functionArgs = JSON.parse(part.functionCall.args.prompt || "{}");
-                const imagePrompt = functionArgs.prompt || prompt;
-                
-                // Make a follow-up call to generate just the image
-                const imageResponse = await this.generateImageOnly(imagePrompt);
-                if (imageResponse.success) {
-                  imageUrl = imageResponse.imageUrl;
-                }
-              }
             }
           }
         }
@@ -353,7 +305,7 @@ export class GeminiProvider extends AIProvider {
     }
   }
   
-  // Helper method to generate only an image if the first call returns function calling instead
+  // Keep the helper method for compatibility, but simplify it
   private async generateImageOnly(prompt: string): Promise<DesignGenerationResponse> {
     try {
       const fullUrl = `${this.baseUrl}/gemini-pro-vision:generateContent?key=${this.apiKey}`;
@@ -441,4 +393,3 @@ export const defaultApiKeys = {
   stabilityai: "sk-your-stability-api-key", // Replace with your actual API key
   gemini: "AIzaSyA5WAO7LtMrT9BvUkR_3t7lrDRTsOeBm0g" // Updated Gemini API key
 };
-
