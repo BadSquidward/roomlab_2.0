@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Settings } from "lucide-react";
+import google.generativeai as genai
 
 interface AIProviderConfigProps {
   onSave: (config: AIProviderSettings) => void;
@@ -29,9 +30,9 @@ export interface AIProviderSettings {
 const AIProviderConfig: React.FC<AIProviderConfigProps> = ({ onSave, currentConfig }) => {
   const [config, setConfig] = useState<AIProviderSettings>(
     currentConfig || {
-      provider: "openai",
-      apiKey: "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",
-      model: "react"
+      provider: "gemini",
+      apiKey: "AIzaSyDE1ZCCUNZ65Y_RPrF534R1ihZQ3NLduoo",
+      model: "gemini-2.0-flash-lite"
     }
   );
   const [isOpen, setIsOpen] = useState(false);
