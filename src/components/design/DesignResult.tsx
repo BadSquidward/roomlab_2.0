@@ -2,8 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
-import { getAIProvider, DesignGenerationRequest } from "@/utils/aiProviders";
-import AIProviderConfig, { AIProviderSettings } from "./AIProviderConfig";
+import { getAIProvider, DesignGenerationRequest, defaultApiKeys } from "@/utils/aiProviders";
 import BillOfQuantities from "./BillOfQuantities";
 import DesignDetails from "./DesignDetails";
 import RegenerationComments from "./RegenerationComments";
@@ -16,15 +15,9 @@ const DesignResult = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [regenerationComment, setRegenerationComment] = useState("");
   const [designData, setDesignData] = useState(sampleDesign);
-  const [aiConfig, setAIConfig] = useState<AIProviderSettings | null>(null);
   
-  // Load AI provider configuration from localStorage
+  // Load data from localStorage
   useEffect(() => {
-    const savedConfig = localStorage.getItem('aiProviderConfig');
-    if (savedConfig) {
-      setAIConfig(JSON.parse(savedConfig));
-    }
-    
     // Check if we have a direct design result from popular designs
     const selectedDesign = localStorage.getItem('selectedDesign');
     if (selectedDesign) {
@@ -42,35 +35,27 @@ const DesignResult = () => {
     }
   }, []);
   
-  // Save AI provider configuration
-  const handleSaveAIConfig = (config: AIProviderSettings) => {
-    setAIConfig(config);
-    localStorage.setItem('aiProviderConfig', JSON.stringify(config));
-    toast({
-      title: "Configuration Saved",
-      description: `AI provider set to ${config.provider} with model ${config.model}`,
-    });
-  };
-  
   // Generate design using AI provider
-  const generateDesignWithAI = async (isRegeneration: boolean = false) => {
-    // Check if AI provider is configured
-    if (!aiConfig || !aiConfig.apiKey) {
-      toast({
-        title: "AI Provider Not Configured",
-        description: "Please configure an AI provider before generating designs.",
-        variant: "destructive",
-      });
-      return null;
-    }
-    
+  const generateDesignWithAI = async (isRegeneration: boolean = false, providerName: string = "openai") => {
     try {
+      // Get API key for the selected provider
+      const apiKey = defaultApiKeys[providerName as keyof typeof defaultApiKeys];
+      
+      if (!apiKey) {
+        toast({
+          title: "API Key Not Available",
+          description: `No API key available for ${providerName}. Please contact support.`,
+          variant: "destructive",
+        });
+        return null;
+      }
+      
       // Extract path parameters for room type
       const pathParts = window.location.pathname.split('/');
       const roomTypeFromPath = pathParts[pathParts.length - 2] || "living-room";
       
-      // Create provider instance
-      const aiProvider = getAIProvider(aiConfig.provider, aiConfig.apiKey, aiConfig.model);
+      // Create provider instance with default model for the provider
+      const aiProvider = getAIProvider(providerName, apiKey);
       
       // Prepare request
       const request: DesignGenerationRequest = {
@@ -133,8 +118,13 @@ const DesignResult = () => {
     setIsLoading(true);
     
     try {
+      // Rotate between providers for diversity (you can change this logic based on your preference)
+      const providers = ["openai", "stabilityai", "gemini"];
+      const randomProviderIndex = Math.floor(Math.random() * providers.length);
+      const selectedProvider = providers[randomProviderIndex];
+      
       // Generate new design with AI using regeneration comments
-      const newImageUrl = await generateDesignWithAI(true);
+      const newImageUrl = await generateDesignWithAI(true, selectedProvider);
       
       if (newImageUrl) {
         // Update design with new image
@@ -191,14 +181,6 @@ const DesignResult = () => {
               src={designData.imageUrl}
               alt="Generated Room Design"
               className="w-full h-full object-cover"
-            />
-          </div>
-          
-          {/* AI Provider Configuration */}
-          <div className="flex justify-end">
-            <AIProviderConfig 
-              onSave={handleSaveAIConfig}
-              currentConfig={aiConfig || undefined}
             />
           </div>
           

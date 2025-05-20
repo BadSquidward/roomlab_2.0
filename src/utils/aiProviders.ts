@@ -175,6 +175,101 @@ export class StabilityAIProvider extends AIProvider {
   }
 }
 
+// Gemini Provider implementation
+export class GeminiProvider extends AIProvider {
+  constructor(apiKey: string, model: string = "gemini-2.0-flash-lite") {
+    super(apiKey, "https://generativelanguage.googleapis.com/v1beta/models", model);
+  }
+
+  async generateDesign(request: DesignGenerationRequest): Promise<DesignGenerationResponse> {
+    try {
+      const prompt = this.formatPrompt(request);
+      const fullUrl = `${this.baseUrl}/${this.model}:generateContent?key=${this.apiKey}`;
+      
+      const response = await fetch(fullUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [
+                {
+                  text: prompt
+                }
+              ]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.4,
+            topK: 32,
+            topP: 1,
+            maxOutputTokens: 2048
+          }
+        })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        console.error("Gemini API error:", data);
+        return {
+          success: false,
+          imageUrl: "",
+          error: data.error?.message || "Error generating image"
+        };
+      }
+
+      // Extract image data from response - assuming Gemini returns an image URL or base64 data
+      // Note: The actual response format will depend on Gemini's API implementation
+      // This is a placeholder implementation that would need to be adjusted based on the actual API response format
+      let imageUrl = "";
+      
+      try {
+        // Extract image from Gemini response
+        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+          const parts = data.candidates[0].content.parts;
+          for (const part of parts) {
+            if (part.inlineData && part.inlineData.mimeType.startsWith('image/')) {
+              imageUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+              break;
+            }
+          }
+        }
+        
+        if (!imageUrl) {
+          return {
+            success: false,
+            imageUrl: "",
+            error: "No image generated in Gemini response"
+          };
+        }
+        
+        return {
+          success: true,
+          imageUrl
+        };
+      } catch (error) {
+        console.error("Error parsing Gemini API response:", error);
+        return {
+          success: false,
+          imageUrl: "",
+          error: "Failed to parse Gemini API response"
+        };
+      }
+    } catch (error) {
+      console.error("Error calling Gemini API:", error);
+      return {
+        success: false,
+        imageUrl: "",
+        error: "Failed to connect to Gemini API"
+      };
+    }
+  }
+}
+
 // Factory function to get the appropriate provider
 export function getAIProvider(providerName: string, apiKey: string, model?: string): AIProvider {
   switch (providerName.toLowerCase()) {
@@ -182,7 +277,17 @@ export function getAIProvider(providerName: string, apiKey: string, model?: stri
       return new OpenAIProvider(apiKey, model || "dall-e-3");
     case "stabilityai":
       return new StabilityAIProvider(apiKey, model || "stable-diffusion-xl");
+    case "gemini":
+      return new GeminiProvider(apiKey, model || "gemini-2.0-flash-lite");
     default:
       throw new Error(`Unsupported AI provider: ${providerName}`);
   }
 }
+
+// Default API keys - these would typically be stored more securely in a real application
+export const defaultApiKeys = {
+  openai: "sk-your-openai-api-key", // Replace with your actual API key
+  stabilityai: "sk-your-stability-api-key", // Replace with your actual API key
+  gemini: "AIza-your-gemini-api-key" // Replace with your actual API key
+};
+
