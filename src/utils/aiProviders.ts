@@ -1,3 +1,4 @@
+
 // AI Provider Integration Utilities
 
 export interface DesignGenerationRequest {
@@ -189,6 +190,7 @@ export class GeminiProvider extends AIProvider {
       console.log("Requesting Gemini image generation with URL:", fullUrl.replace(this.apiKey, "[REDACTED]"));
       console.log("Using prompt:", prompt);
       
+      // Updated request format - using only text prompt without function calling
       const response = await fetch(fullUrl, {
         method: "POST",
         headers: {
@@ -197,7 +199,6 @@ export class GeminiProvider extends AIProvider {
         body: JSON.stringify({
           contents: [
             {
-              role: "user",
               parts: [
                 {
                   text: prompt
