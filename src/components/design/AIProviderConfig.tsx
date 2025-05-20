@@ -30,8 +30,8 @@ const AIProviderConfig: React.FC<AIProviderConfigProps> = ({ onSave, currentConf
   const [config, setConfig] = useState<AIProviderSettings>(
     currentConfig || {
       provider: "openai",
-      apiKey: "",
-      model: ""
+      apiKey: "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",
+      model: "react"
     }
   );
   const [isOpen, setIsOpen] = useState(false);
