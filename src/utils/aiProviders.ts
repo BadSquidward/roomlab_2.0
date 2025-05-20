@@ -1,3 +1,4 @@
+
 // AI Provider Integration Utilities
 
 export interface DesignGenerationRequest {
@@ -186,6 +187,7 @@ export class GeminiProvider extends AIProvider {
       const fullUrl = `${this.baseUrl}/${this.model}:generateContent?key=${this.apiKey}`;
       
       console.log("Requesting Gemini image generation with URL:", fullUrl.replace(this.apiKey, "[REDACTED]"));
+      console.log("Using prompt:", prompt);
       
       const response = await fetch(fullUrl, {
         method: "POST",
@@ -237,14 +239,36 @@ export class GeminiProvider extends AIProvider {
           }
         }
         
-        // If no image is found in the response but the API call was successful,
-        // we'll use a fallback image since Gemini-2.0-flash-lite doesn't always generate images
+        // Since Gemini-2.0-flash-lite doesn't support image generation, 
+        // we'll always use Unsplash for now to get relevant images
         if (!imageUrl) {
-          console.log("No image found in Gemini response, using text-to-image conversion");
+          console.log("No image found in Gemini response, using Unsplash to fetch a relevant image");
           
-          // Generate a placeholder image based on the design description
-          const description = encodeURIComponent(prompt.substring(0, 100));
-          imageUrl = `https://source.unsplash.com/featured/?interior,${request.style.toLowerCase()},${request.roomType.replace('-', ' ')}`;
+          // Generate a tailored search term based on the request
+          const roomType = request.roomType.replace('-', ' ');
+          let searchTerms = `interior,${request.style.toLowerCase()},${roomType}`;
+          
+          // Add regeneration comment keywords if available
+          if (request.regenerationComment && request.regenerationComment.trim() !== "") {
+            // Extract key descriptive words from the regeneration comment
+            const keywords = request.regenerationComment
+              .split(/\s+/)
+              .filter(word => word.length > 3)  // Only use words longer than 3 chars
+              .slice(0, 3)  // Take up to 3 keywords
+              .join(',');
+            
+            if (keywords) {
+              searchTerms += `,${keywords}`;
+            }
+          }
+          
+          // Add color scheme to search terms
+          searchTerms += `,${request.colorScheme.toLowerCase()}`;
+          
+          const encodedSearchTerms = encodeURIComponent(searchTerms);
+          // Use random parameter to avoid caching and get different images
+          const randomParam = Math.floor(Math.random() * 1000);
+          imageUrl = `https://source.unsplash.com/featured/?${encodedSearchTerms}&random=${randomParam}`;
           
           return {
             success: true,

@@ -78,6 +78,7 @@ const DesignResult = () => {
       // Add regeneration comments if this is a regeneration request
       if (isRegeneration && regenerationComment.trim()) {
         request.regenerationComment = regenerationComment;
+        console.log("Adding regeneration comment to prompt:", regenerationComment);
       }
       
       // Generate design
@@ -121,18 +122,20 @@ const DesignResult = () => {
     setIsLoading(true);
     
     try {
-      // Prioritize Gemini but fall back to other providers if needed
-      const providers = ["gemini", "openai", "stabilityai"];
-      
-      // First try with Gemini
+      // Always try with Gemini first, as it's our primary provider
       let newImageUrl = await generateDesignWithAI(true, "gemini");
       
       // If Gemini fails, try with other providers
       if (!newImageUrl) {
         console.log("Gemini generation failed, trying with alternative provider");
-        const randomProviderIndex = Math.floor(Math.random() * (providers.length - 1)) + 1; // Skip Gemini (index 0)
-        const fallbackProvider = providers[randomProviderIndex];
-        newImageUrl = await generateDesignWithAI(true, fallbackProvider);
+        // Try with OpenAI
+        newImageUrl = await generateDesignWithAI(true, "openai");
+        
+        // If OpenAI fails, try with StabilityAI
+        if (!newImageUrl) {
+          console.log("OpenAI generation failed, trying with StabilityAI");
+          newImageUrl = await generateDesignWithAI(true, "stabilityai");
+        }
       }
       
       if (newImageUrl) {
