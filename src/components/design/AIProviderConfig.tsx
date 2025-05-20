@@ -14,9 +14,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Settings } from "lucide-react";
-// Fixed import syntax for Google Generative AI
-// import google.generativeai as genai - incorrect syntax
-// This should be a proper import if needed
 
 interface AIProviderConfigProps {
   onSave: (config: AIProviderSettings) => void;
@@ -34,7 +31,7 @@ const AIProviderConfig: React.FC<AIProviderConfigProps> = ({ onSave, currentConf
     currentConfig || {
       provider: "gemini",
       apiKey: "AIzaSyAnPSoK8-HdXCLgfUc0KSgETtuewWRzsic",
-      model: " gemini-2.0-flash-preview-image-generation"
+      model: "gemini-2.0-flash-preview-image-generation"
     }
   );
   const [isOpen, setIsOpen] = useState(false);
@@ -75,6 +72,7 @@ const AIProviderConfig: React.FC<AIProviderConfigProps> = ({ onSave, currentConf
                 <SelectContent>
                   <SelectItem value="openai">OpenAI</SelectItem>
                   <SelectItem value="stabilityai">Stability AI</SelectItem>
+                  <SelectItem value="gemini">Gemini</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -111,7 +109,7 @@ const AIProviderConfig: React.FC<AIProviderConfigProps> = ({ onSave, currentConf
                     <SelectItem value="dall-e-2">DALL-E 2</SelectItem>
                   </SelectContent>
                 </Select>
-              ) : (
+              ) : config.provider === "stabilityai" ? (
                 <Select 
                   value={config.model} 
                   onValueChange={(value) => setConfig({ ...config, model: value })}
@@ -122,6 +120,18 @@ const AIProviderConfig: React.FC<AIProviderConfigProps> = ({ onSave, currentConf
                   <SelectContent>
                     <SelectItem value="stable-diffusion-xl">Stable Diffusion XL</SelectItem>
                     <SelectItem value="stable-diffusion-3">Stable Diffusion 3</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Select 
+                  value={config.model} 
+                  onValueChange={(value) => setConfig({ ...config, model: value })}
+                >
+                  <SelectTrigger id="model">
+                    <SelectValue placeholder="Select model" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gemini-2.0-flash-preview-image-generation">Gemini 2.0 Flash Preview</SelectItem>
                   </SelectContent>
                 </Select>
               )}
