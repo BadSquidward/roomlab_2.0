@@ -1,3 +1,4 @@
+
 // AI Provider Integration Utilities
 
 export interface DesignGenerationRequest {
@@ -309,5 +310,5 @@ export function getAIProvider(providerName: string, apiKey: string, model?: stri
 export const defaultApiKeys = {
   openai: "sk-your-openai-api-key", // Replace with your actual API key
   stabilityai: "sk-your-stability-api-key", // Replace with your actual API key
-  gemini: "AIzaSyDE1ZCCUNZ65Y_RPrF534R1ihZQ3NLduoo" // Using the provided API key
+  gemini: "AIzaSyAnPSoK8-HdXCLgfUc0KSgETtuewWRzsic" // Updated Gemini API key
 };
