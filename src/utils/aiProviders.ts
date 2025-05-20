@@ -1,3 +1,4 @@
+
 // AI Provider Integration Utilities
 
 export interface DesignGenerationRequest {
@@ -177,7 +178,7 @@ export class StabilityAIProvider extends AIProvider {
 
 // Updated Gemini Provider implementation with proper handling of image and text response
 export class GeminiProvider extends AIProvider {
-  constructor(apiKey: string, model: string = "imagen-3.0-generate-002") {
+  constructor(apiKey: string, model: string = "gemini-2.0-flash-preview-image-generation") {
     super(apiKey, "https://generativelanguage.googleapis.com/v1beta/models", model);
   }
 
@@ -428,7 +429,7 @@ export function getAIProvider(providerName: string, apiKey: string, model?: stri
     case "stabilityai":
       return new StabilityAIProvider(apiKey, model || "stable-diffusion-xl");
     case "gemini":
-      return new GeminiProvider(apiKey, model || "imagen-3.0-generate-002");
+      return new GeminiProvider(apiKey, model || "gemini-2.0-flash-preview-image-generation");
     default:
       throw new Error(`Unsupported AI provider: ${providerName}`);
   }
@@ -440,3 +441,4 @@ export const defaultApiKeys = {
   stabilityai: "sk-your-stability-api-key", // Replace with your actual API key
   gemini: "AIzaSyA5WAO7LtMrT9BvUkR_3t7lrDRTsOeBm0g" // Updated Gemini API key
 };
+
