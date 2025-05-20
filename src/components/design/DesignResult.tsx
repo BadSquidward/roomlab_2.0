@@ -15,6 +15,7 @@ const DesignResult = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [regenerationComment, setRegenerationComment] = useState("");
   const [designData, setDesignData] = useState(sampleDesign);
+  const [selectedProvider, setSelectedProvider] = useState("gemini"); // Default to Gemini
   
   // Load data from localStorage
   useEffect(() => {
@@ -36,7 +37,7 @@ const DesignResult = () => {
   }, []);
   
   // Generate design using AI provider
-  const generateDesignWithAI = async (isRegeneration: boolean = false, providerName: string = "openai") => {
+  const generateDesignWithAI = async (isRegeneration: boolean = false, providerName: string = "gemini") => {
     try {
       // Get API key for the selected provider
       const apiKey = defaultApiKeys[providerName as keyof typeof defaultApiKeys];
@@ -56,6 +57,8 @@ const DesignResult = () => {
       
       // Create provider instance with default model for the provider
       const aiProvider = getAIProvider(providerName, apiKey);
+      
+      console.log(`Generating design with ${providerName} provider`);
       
       // Prepare request
       const request: DesignGenerationRequest = {
@@ -83,7 +86,7 @@ const DesignResult = () => {
       if (!result.success) {
         toast({
           title: "Generation Failed",
-          description: result.error || "Failed to generate design with AI provider",
+          description: result.error || `Failed to generate design with ${providerName}`,
           variant: "destructive",
         });
         return null;
@@ -118,13 +121,19 @@ const DesignResult = () => {
     setIsLoading(true);
     
     try {
-      // Rotate between providers for diversity (you can change this logic based on your preference)
-      const providers = ["openai", "stabilityai", "gemini"];
-      const randomProviderIndex = Math.floor(Math.random() * providers.length);
-      const selectedProvider = providers[randomProviderIndex];
+      // Prioritize Gemini but fall back to other providers if needed
+      const providers = ["gemini", "openai", "stabilityai"];
       
-      // Generate new design with AI using regeneration comments
-      const newImageUrl = await generateDesignWithAI(true, selectedProvider);
+      // First try with Gemini
+      let newImageUrl = await generateDesignWithAI(true, "gemini");
+      
+      // If Gemini fails, try with other providers
+      if (!newImageUrl) {
+        console.log("Gemini generation failed, trying with alternative provider");
+        const randomProviderIndex = Math.floor(Math.random() * (providers.length - 1)) + 1; // Skip Gemini (index 0)
+        const fallbackProvider = providers[randomProviderIndex];
+        newImageUrl = await generateDesignWithAI(true, fallbackProvider);
+      }
       
       if (newImageUrl) {
         // Update design with new image
