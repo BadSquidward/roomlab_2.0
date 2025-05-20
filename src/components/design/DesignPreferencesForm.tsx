@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +39,7 @@ const DesignPreferencesForm: React.FC<DesignPreferencesFormProps> = ({ roomType,
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
+    roomType: roomType,
     length: "4",
     width: "3",
     height: "2.5",
@@ -50,11 +51,13 @@ const DesignPreferencesForm: React.FC<DesignPreferencesFormProps> = ({ roomType,
   });
 
   // Update style when selectedStyle prop changes
-  useState(() => {
+  useEffect(() => {
     if (selectedStyle && selectedStyle !== formData.style) {
-      setFormData(prev => ({ ...prev, style: selectedStyle }));
+      setFormData(prev => ({ ...prev, style: selectedStyle, roomType }));
+    } else {
+      setFormData(prev => ({ ...prev, roomType }));
     }
-  });
+  }, [selectedStyle, roomType]);
 
   // Handle input changes
   const handleChange = (field: string, value: string | number | string[]) => {
@@ -112,35 +115,29 @@ const DesignPreferencesForm: React.FC<DesignPreferencesFormProps> = ({ roomType,
         description: "You need at least 1 token to generate a design. Please purchase more tokens.",
         variant: "destructive",
       });
-      navigate("/tokens");
+      
+      // Store form data for later
+      localStorage.setItem('designFormData', JSON.stringify(formData));
+      
+      // Navigate to pricing page with return URL
+      navigate(`/pricing?returnUrl=${encodeURIComponent(`/design-generation/${roomType}/result`)}`);
       return;
     }
     
     setIsLoading(true);
     
-    // Simulate design generation API call
+    // Store form data for the design result page to use
+    localStorage.setItem('designFormData', JSON.stringify(formData));
+    
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      
-      // Deduct 1 token from the user's balance
-      const updatedTokens = userInfo.tokens - 1;
-      localStorage.setItem('user', JSON.stringify({
-        ...userInfo,
-        tokens: updatedTokens
-      }));
-      
-      // Show success toast with token deduction
-      toast({
-        title: "Design Generated",
-        description: `1 token has been used. Remaining tokens: ${updatedTokens}`,
-      });
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Short delay for UI feedback
       
       // Navigate to the results page
       navigate(`/design-generation/${roomType}/result`);
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to generate design. Please try again.",
+        description: "Failed to proceed to design generation. Please try again.",
         variant: "destructive",
       });
       setIsLoading(false);

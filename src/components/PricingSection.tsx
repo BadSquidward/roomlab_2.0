@@ -1,10 +1,22 @@
 
-import { CheckCircle } from "lucide-react";
+import { useState } from "react";
+import { CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
 
 const PricingSection = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingPackage, setLoadingPackage] = useState<string | null>(null);
+  
+  // Get user info from localStorage
+  const userInfo = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') || '{}') : { tokens: 0 };
+  
   const tokenPackages = [
     {
+      id: "starter",
       name: "Starter",
       price: 349,
       tokens: 5,
@@ -17,6 +29,7 @@ const PricingSection = () => {
       popular: false,
     },
     {
+      id: "pro",
       name: "Pro",
       price: 890,
       tokens: 15,
@@ -31,6 +44,7 @@ const PricingSection = () => {
       popular: true,
     },
     {
+      id: "premium",
       name: "Premium",
       price: 1790,
       tokens: 35,
@@ -46,6 +60,47 @@ const PricingSection = () => {
       popular: false,
     },
   ];
+
+  // Handle token purchase
+  const handlePurchase = async (packageData: { id: string, tokens: number, name: string }) => {
+    setIsLoading(true);
+    setLoadingPackage(packageData.id);
+    
+    // Simulate payment process
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      
+      // Update user tokens
+      const newTokens = (userInfo.tokens || 0) + packageData.tokens;
+      
+      // Save to localStorage
+      localStorage.setItem('user', JSON.stringify({
+        ...userInfo,
+        tokens: newTokens
+      }));
+      
+      toast({
+        title: "Purchase Successful",
+        description: `You've added ${packageData.tokens} tokens to your account.`,
+      });
+      
+      // Navigate to design generation if requested
+      const urlParams = new URLSearchParams(window.location.search);
+      const returnUrl = urlParams.get('returnUrl');
+      if (returnUrl) {
+        navigate(returnUrl);
+      }
+    } catch (error) {
+      toast({
+        title: "Purchase Failed",
+        description: "There was an error processing your payment. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+      setLoadingPackage(null);
+    }
+  };
 
   return (
     <section className="py-16 bg-gradient-to-b from-white to-gray-50">
@@ -92,8 +147,17 @@ const PricingSection = () => {
                 <Button 
                   className={`w-full ${pkg.popular ? "bg-brand-500 hover:bg-brand-600" : ""}`}
                   variant={pkg.popular ? "default" : "outline"}
+                  onClick={() => handlePurchase({id: pkg.id, tokens: pkg.tokens, name: pkg.name})}
+                  disabled={isLoading}
                 >
-                  Buy Now
+                  {isLoading && loadingPackage === pkg.id ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    `Buy Now`
+                  )}
                 </Button>
               </div>
             </div>

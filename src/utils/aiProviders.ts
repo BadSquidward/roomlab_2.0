@@ -1,4 +1,3 @@
-
 // AI Provider Integration Utilities
 
 export interface DesignGenerationRequest {
@@ -175,9 +174,9 @@ export class StabilityAIProvider extends AIProvider {
   }
 }
 
-// Updated Gemini Provider implementation
+// Updated Gemini Provider implementation with the new image-generation model
 export class GeminiProvider extends AIProvider {
-  constructor(apiKey: string, model: string = "gemini-2.0-flash-lite") {
+  constructor(apiKey: string, model: string = "gemini-2.0-flash-preview-image-generation") {
     super(apiKey, "https://generativelanguage.googleapis.com/v1beta/models", model);
   }
 
@@ -200,7 +199,7 @@ export class GeminiProvider extends AIProvider {
               role: "user",
               parts: [
                 {
-                  text: prompt + "\n\nPlease generate a photorealistic image of this interior design."
+                  text: prompt + "\n\nGenerate a photorealistic image of this interior design."
                 }
               ]
             }
@@ -239,10 +238,8 @@ export class GeminiProvider extends AIProvider {
           }
         }
         
-        // Since Gemini-2.0-flash-lite doesn't support image generation, 
-        // we'll always use Unsplash for now to get relevant images
         if (!imageUrl) {
-          console.log("No image found in Gemini response, using Unsplash to fetch a relevant image");
+          console.log("No image found in Gemini response, using Unsplash as fallback");
           
           // Generate a tailored search term based on the request
           const roomType = request.roomType.replace('-', ' ');
@@ -269,11 +266,6 @@ export class GeminiProvider extends AIProvider {
           // Use random parameter to avoid caching and get different images
           const randomParam = Math.floor(Math.random() * 1000);
           imageUrl = `https://source.unsplash.com/featured/?${encodedSearchTerms}&random=${randomParam}`;
-          
-          return {
-            success: true,
-            imageUrl
-          };
         }
         
         return {
@@ -307,7 +299,7 @@ export function getAIProvider(providerName: string, apiKey: string, model?: stri
     case "stabilityai":
       return new StabilityAIProvider(apiKey, model || "stable-diffusion-xl");
     case "gemini":
-      return new GeminiProvider(apiKey, model || "gemini-2.0-flash-lite");
+      return new GeminiProvider(apiKey, model || "gemini-2.0-flash-preview-image-generation");
     default:
       throw new Error(`Unsupported AI provider: ${providerName}`);
   }

@@ -21,7 +21,8 @@ const RegenerationComments = ({ value, onChange }: RegenerationCommentsProps) =>
           rows={3}
         />
         <p className="text-xs text-muted-foreground">
-          Your comments will be used to guide the AI in generating a new version of your design.
+          Your comments will guide the AI to modify the current design based on your feedback.
+          Be specific about what elements you want to change or add.
         </p>
       </div>
     </div>

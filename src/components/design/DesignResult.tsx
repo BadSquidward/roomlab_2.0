@@ -15,29 +15,113 @@ const DesignResult = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [regenerationComment, setRegenerationComment] = useState("");
   const [designData, setDesignData] = useState(sampleDesign);
-  const [selectedProvider, setSelectedProvider] = useState("gemini"); // Default to Gemini
+  const [selectedProvider] = useState("gemini"); // Default to Gemini
   
   // Load data from localStorage
   useEffect(() => {
-    // Check if we have a direct design result from popular designs
-    const selectedDesign = localStorage.getItem('selectedDesign');
-    if (selectedDesign) {
-      const designInfo = JSON.parse(selectedDesign);
-      if (designInfo.useDirectResult) {
-        // Update design data with selected style
-        setDesignData({
-          ...designData,
-          style: designInfo.style.charAt(0).toUpperCase() + designInfo.style.slice(1)
-        });
-        
-        // Clear the flag after use
-        localStorage.removeItem('selectedDesign');
+    // Get form data from localStorage if available
+    const storedFormData = localStorage.getItem('designFormData');
+    const storedDesignData = localStorage.getItem('designResult');
+    
+    if (storedDesignData) {
+      try {
+        const parsedDesignData = JSON.parse(storedDesignData);
+        setDesignData(parsedDesignData);
+      } catch (error) {
+        console.error("Error parsing stored design data:", error);
+      }
+    } else if (storedFormData) {
+      // If we have form data but no result yet, generate a new design
+      try {
+        const formData = JSON.parse(storedFormData);
+        generateInitialDesign(formData);
+      } catch (error) {
+        console.error("Error parsing stored form data:", error);
       }
     }
   }, []);
   
+  // Generate initial design using form data
+  const generateInitialDesign = async (formData: any) => {
+    // Check if user has enough tokens
+    const userInfo = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') || '{}') : { tokens: 0 };
+    
+    if (!userInfo || userInfo.tokens < 1) {
+      toast({
+        title: "Insufficient tokens",
+        description: "You need at least 1 token to generate a design. Please purchase more tokens.",
+        variant: "destructive",
+      });
+      // Redirect to pricing page with return URL
+      navigate(`/pricing?returnUrl=${encodeURIComponent(window.location.pathname)}`);
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      // Create request from form data
+      const request: DesignGenerationRequest = {
+        roomType: formData.roomType || "living-room",
+        style: formData.style || "modern",
+        colorScheme: formData.colorScheme || "neutral",
+        dimensions: {
+          length: formData.length || "4",
+          width: formData.width || "3",
+          height: formData.height || "2.5"
+        },
+        budget: getBudgetText(formData.budget || 50),
+        furniture: formData.furniture || ["Sofa", "Coffee Table", "Bookshelf"],
+        specialRequirements: formData.specialRequirements || ""
+      };
+      
+      // Generate design with AI
+      const imageResult = await generateDesignWithAI(false, selectedProvider, request);
+      
+      if (imageResult) {
+        // Create new design data object
+        const newDesignData = {
+          imageUrl: imageResult,
+          roomType: formData.roomType || "living-room",
+          style: formData.style || "Modern",
+          colorScheme: formData.colorScheme || "Neutral",
+          dimensions: `${formData.length || "4"}m × ${formData.width || "3"}m × ${formData.height || "2.5"}m`,
+        };
+        
+        // Update state and localStorage
+        setDesignData(newDesignData);
+        localStorage.setItem('designResult', JSON.stringify(newDesignData));
+        
+        // Deduct token
+        const updatedTokens = userInfo.tokens - 1;
+        localStorage.setItem('user', JSON.stringify({
+          ...userInfo,
+          tokens: updatedTokens
+        }));
+        
+        toast({
+          title: "Design Generated",
+          description: `1 token has been used. Remaining tokens: ${updatedTokens}`,
+        });
+      }
+    } catch (error) {
+      console.error("Error generating initial design:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate design. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   // Generate design using AI provider
-  const generateDesignWithAI = async (isRegeneration: boolean = false, providerName: string = "gemini") => {
+  const generateDesignWithAI = async (
+    isRegeneration: boolean = false, 
+    providerName: string = "gemini", 
+    customRequest?: DesignGenerationRequest
+  ) => {
     try {
       // Get API key for the selected provider
       const apiKey = defaultApiKeys[providerName as keyof typeof defaultApiKeys];
@@ -61,7 +145,7 @@ const DesignResult = () => {
       console.log(`Generating design with ${providerName} provider`);
       
       // Prepare request
-      const request: DesignGenerationRequest = {
+      const request = customRequest || {
         roomType: roomTypeFromPath,
         style: designData.style,
         colorScheme: designData.colorScheme,
@@ -115,35 +199,25 @@ const DesignResult = () => {
         description: "You need at least 1 token to regenerate a design. Please purchase more tokens.",
         variant: "destructive",
       });
-      navigate("/tokens");
+      navigate(`/pricing?returnUrl=${encodeURIComponent(window.location.pathname)}`);
       return;
     }
     
     setIsLoading(true);
     
     try {
-      // Always try with Gemini first, as it's our primary provider
-      let newImageUrl = await generateDesignWithAI(true, "gemini");
-      
-      // If Gemini fails, try with other providers
-      if (!newImageUrl) {
-        console.log("Gemini generation failed, trying with alternative provider");
-        // Try with OpenAI
-        newImageUrl = await generateDesignWithAI(true, "openai");
-        
-        // If OpenAI fails, try with StabilityAI
-        if (!newImageUrl) {
-          console.log("OpenAI generation failed, trying with StabilityAI");
-          newImageUrl = await generateDesignWithAI(true, "stabilityai");
-        }
-      }
+      // Generate new design with regeneration comments
+      const newImageUrl = await generateDesignWithAI(true, "gemini");
       
       if (newImageUrl) {
         // Update design with new image
-        setDesignData({
+        const updatedDesignData = {
           ...designData,
           imageUrl: newImageUrl
-        });
+        };
+        
+        setDesignData(updatedDesignData);
+        localStorage.setItem('designResult', JSON.stringify(updatedDesignData));
         
         // Deduct 1 token from the user's balance
         const updatedTokens = userInfo.tokens - 1;
@@ -194,6 +268,14 @@ const DesignResult = () => {
               alt="Generated Room Design"
               className="w-full h-full object-cover"
             />
+            {isLoading && (
+              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                <div className="text-white text-center">
+                  <div className="animate-spin w-10 h-10 border-4 border-white border-t-transparent rounded-full mb-2"></div>
+                  <p>Generating design...</p>
+                </div>
+              </div>
+            )}
           </div>
           
           {/* Regeneration Comments Section */}
