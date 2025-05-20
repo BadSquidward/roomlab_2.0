@@ -14,7 +14,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Settings } from "lucide-react";
-import google.generativeai as genai
+// Fixed import syntax for Google Generative AI
+// import google.generativeai as genai - incorrect syntax
+// This should be a proper import if needed
 
 interface AIProviderConfigProps {
   onSave: (config: AIProviderSettings) => void;
