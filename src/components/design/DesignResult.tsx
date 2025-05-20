@@ -14,7 +14,10 @@ const DesignResult = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [regenerationComment, setRegenerationComment] = useState("");
-  const [designData, setDesignData] = useState(sampleDesign);
+  const [designData, setDesignData] = useState({
+    ...sampleDesign,
+    caption: "" // Add caption field to track AI-generated text
+  });
   const [selectedProvider] = useState("gemini"); // Default to Gemini
   
   // Load data from localStorage
@@ -76,16 +79,17 @@ const DesignResult = () => {
       };
       
       // Generate design with AI
-      const imageResult = await generateDesignWithAI(false, selectedProvider, request);
+      const result = await generateDesignWithAI(false, selectedProvider, request);
       
-      if (imageResult) {
+      if (result) {
         // Create new design data object
         const newDesignData = {
-          imageUrl: imageResult,
+          imageUrl: result.imageUrl,
           roomType: formData.roomType || "living-room",
           style: formData.style || "Modern",
           colorScheme: formData.colorScheme || "Neutral",
           dimensions: `${formData.length || "4"}m × ${formData.width || "3"}m × ${formData.height || "2.5"}m`,
+          caption: result.caption || "" // Store caption in design data
         };
         
         // Update state and localStorage
@@ -177,7 +181,7 @@ const DesignResult = () => {
         return null;
       }
       
-      return result.imageUrl;
+      return result;
     } catch (error) {
       console.error("Error generating design:", error);
       toast({
@@ -207,13 +211,14 @@ const DesignResult = () => {
     
     try {
       // Generate new design with regeneration comments
-      const newImageUrl = await generateDesignWithAI(true, "gemini");
+      const result = await generateDesignWithAI(true, "gemini");
       
-      if (newImageUrl) {
+      if (result) {
         // Update design with new image
         const updatedDesignData = {
           ...designData,
-          imageUrl: newImageUrl
+          imageUrl: result.imageUrl,
+          caption: result.caption || designData.caption // Update caption if provided
         };
         
         setDesignData(updatedDesignData);
@@ -262,18 +267,27 @@ const DesignResult = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Design Preview Section */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="relative aspect-[4/3] rounded-lg overflow-hidden border">
-            <img
-              src={designData.imageUrl}
-              alt="Generated Room Design"
-              className="w-full h-full object-cover"
-            />
-            {isLoading && (
-              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                <div className="text-white text-center">
-                  <div className="animate-spin w-10 h-10 border-4 border-white border-t-transparent rounded-full mb-2"></div>
-                  <p>Generating design...</p>
+          <div className="space-y-3">
+            <div className="relative aspect-[4/3] rounded-lg overflow-hidden border">
+              <img
+                src={designData.imageUrl}
+                alt="Generated Room Design"
+                className="w-full h-full object-cover"
+              />
+              {isLoading && (
+                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                  <div className="text-white text-center">
+                    <div className="animate-spin w-10 h-10 border-4 border-white border-t-transparent rounded-full mb-2"></div>
+                    <p>Generating design...</p>
+                  </div>
                 </div>
+              )}
+            </div>
+            
+            {/* Design Caption - Display the AI-generated text */}
+            {designData.caption && (
+              <div className="bg-muted rounded-md p-4">
+                <p className="text-muted-foreground italic text-sm">{designData.caption}</p>
               </div>
             )}
           </div>

@@ -1,4 +1,3 @@
-
 // AI Provider Integration Utilities
 
 export interface DesignGenerationRequest {
@@ -20,6 +19,7 @@ export interface DesignGenerationResponse {
   imageUrl: string;
   success: boolean;
   error?: string;
+  caption?: string; // Added caption field for text descriptions
 }
 
 // Base class for AI providers
@@ -175,7 +175,7 @@ export class StabilityAIProvider extends AIProvider {
   }
 }
 
-// Updated Gemini Provider implementation with the new image-generation model
+// Updated Gemini Provider implementation with proper handling of image and text response
 export class GeminiProvider extends AIProvider {
   constructor(apiKey: string, model: string = "gemini-2.0-flash-preview-image-generation") {
     super(apiKey, "https://generativelanguage.googleapis.com/v1beta/models", model);
@@ -200,7 +200,7 @@ export class GeminiProvider extends AIProvider {
               role: "user",
               parts: [
                 {
-                  text: prompt + "\n\nGenerate a photorealistic image of this interior design."
+                  text: prompt
                 }
               ]
             }
@@ -215,6 +215,7 @@ export class GeminiProvider extends AIProvider {
       });
 
       const data = await response.json();
+      console.log("Gemini API response:", JSON.stringify(data));
       
       if (!response.ok) {
         console.error("Gemini API error:", data);
@@ -225,16 +226,23 @@ export class GeminiProvider extends AIProvider {
         };
       }
 
-      // Extract image data from Gemini response
+      // Extract image data and text from Gemini response
       let imageUrl = "";
+      let caption = "";
       
       try {
         if (data.candidates && data.candidates[0] && data.candidates[0].content) {
           const parts = data.candidates[0].content.parts;
+          
+          // Process each part to extract image and text
           for (const part of parts) {
+            // Extract image if available
             if (part.inlineData && part.inlineData.mimeType.startsWith('image/')) {
               imageUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-              break;
+            } 
+            // Extract text if available
+            else if (part.text) {
+              caption += part.text;
             }
           }
         }
@@ -267,11 +275,17 @@ export class GeminiProvider extends AIProvider {
           // Use random parameter to avoid caching and get different images
           const randomParam = Math.floor(Math.random() * 1000);
           imageUrl = `https://source.unsplash.com/featured/?${encodedSearchTerms}&random=${randomParam}`;
+          
+          // Generate a default caption if none was provided
+          if (!caption) {
+            caption = `A ${request.style} ${request.roomType.replace('-', ' ')} with ${request.colorScheme} color scheme.`;
+          }
         }
         
         return {
           success: true,
-          imageUrl
+          imageUrl,
+          caption
         };
       } catch (error) {
         console.error("Error parsing Gemini API response:", error);
