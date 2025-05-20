@@ -33,8 +33,8 @@ const AIProviderConfig: React.FC<AIProviderConfigProps> = ({ onSave, currentConf
   const [config, setConfig] = useState<AIProviderSettings>(
     currentConfig || {
       provider: "gemini",
-      apiKey: "AIzaSyDE1ZCCUNZ65Y_RPrF534R1ihZQ3NLduoo",
-      model: "gemini-2.0-flash-lite"
+      apiKey: "AIzaSyBSiBxHnAx6AmScrhv2-reoSzdhqk9TuDo",
+      model: " gemini-2.0-flash-preview-image-generation"
     }
   );
   const [isOpen, setIsOpen] = useState(false);
