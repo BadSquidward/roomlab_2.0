@@ -210,7 +210,23 @@ export class GeminiProvider extends AIProvider {
             topK: 32,
             topP: 1,
             maxOutputTokens: 2048
-          }
+          },
+          tools: [{
+            functionDeclarations: [{
+              name: "generate_image",
+              description: "Generate an interior design image based on the specifications",
+              parameters: {
+                type: "OBJECT",
+                properties: {
+                  prompt: {
+                    type: "STRING",
+                    description: "The prompt to generate the image from"
+                  }
+                },
+                required: ["prompt"]
+              }
+            }]
+          }]
         })
       });
 
@@ -243,6 +259,37 @@ export class GeminiProvider extends AIProvider {
             // Extract text if available
             else if (part.text) {
               caption += part.text;
+            }
+            // Check for tool calls that might contain the image
+            else if (part.functionCall && part.functionCall.name === "generate_image") {
+              const functionArgs = JSON.parse(part.functionCall.args.prompt || "{}");
+              if (functionArgs.prompt) {
+                // Store the prompt as caption if no other text is available
+                if (!caption) {
+                  caption = functionArgs.prompt;
+                }
+              }
+            }
+          }
+        }
+        
+        // Handle tool responses if present
+        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+          const parts = data.candidates[0].content.parts;
+          
+          for (const part of parts) {
+            if (part.functionCall && part.functionCall.name === "generate_image") {
+              // If we have a function call but no image yet, we need to make a follow-up call
+              if (!imageUrl) {
+                const functionArgs = JSON.parse(part.functionCall.args.prompt || "{}");
+                const imagePrompt = functionArgs.prompt || prompt;
+                
+                // Make a follow-up call to generate just the image
+                const imageResponse = await this.generateImageOnly(imagePrompt);
+                if (imageResponse.success) {
+                  imageUrl = imageResponse.imageUrl;
+                }
+              }
             }
           }
         }
@@ -301,6 +348,73 @@ export class GeminiProvider extends AIProvider {
         success: false,
         imageUrl: "",
         error: "Failed to connect to Gemini API"
+      };
+    }
+  }
+  
+  // Helper method to generate only an image if the first call returns function calling instead
+  private async generateImageOnly(prompt: string): Promise<DesignGenerationResponse> {
+    try {
+      const fullUrl = `${this.baseUrl}/gemini-pro-vision:generateContent?key=${this.apiKey}`;
+      
+      const response = await fetch(fullUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: `Generate a photorealistic image based on this description: ${prompt}`
+                }
+              ]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.4,
+            topK: 32,
+            topP: 1,
+            maxOutputTokens: 2048
+          }
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        return {
+          success: false,
+          imageUrl: "",
+          error: data.error?.message || "Error generating image"
+        };
+      }
+      
+      let imageUrl = "";
+      
+      // Try to extract image data
+      if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+        const parts = data.candidates[0].content.parts;
+        
+        for (const part of parts) {
+          if (part.inlineData && part.inlineData.mimeType.startsWith('image/')) {
+            imageUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+            break;
+          }
+        }
+      }
+      
+      return {
+        success: !!imageUrl,
+        imageUrl,
+        caption: prompt
+      };
+    } catch (error) {
+      return {
+        success: false,
+        imageUrl: "",
+        error: "Failed to generate image in follow-up request"
       };
     }
   }
