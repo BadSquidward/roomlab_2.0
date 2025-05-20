@@ -177,7 +177,7 @@ export class StabilityAIProvider extends AIProvider {
 
 // Updated Gemini Provider implementation with proper handling of image and text response
 export class GeminiProvider extends AIProvider {
-  constructor(apiKey: string, model: string = "gemini-2.0-flash-preview-image-generation") {
+  constructor(apiKey: string, model: string = "imagen-3.0-generate-002") {
     super(apiKey, "https://generativelanguage.googleapis.com/v1beta/models", model);
   }
 
@@ -428,7 +428,7 @@ export function getAIProvider(providerName: string, apiKey: string, model?: stri
     case "stabilityai":
       return new StabilityAIProvider(apiKey, model || "stable-diffusion-xl");
     case "gemini":
-      return new GeminiProvider(apiKey, model || "gemini-2.0-flash-preview-image-generation");
+      return new GeminiProvider(apiKey, model || "imagen-3.0-generate-002");
     default:
       throw new Error(`Unsupported AI provider: ${providerName}`);
   }

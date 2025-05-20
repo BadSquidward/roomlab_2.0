@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
   Dialog,
@@ -30,7 +31,7 @@ const AIProviderConfig: React.FC<AIProviderConfigProps> = ({ onSave, currentConf
     currentConfig || {
       provider: "gemini",
       apiKey: "AIzaSyA5WAO7LtMrT9BvUkR_3t7lrDRTsOeBm0g",
-      model: "gemini-2.0-flash-preview-image-generation"
+      model: "imagen-3.0-generate-002"
     }
   );
   const [isOpen, setIsOpen] = useState(false);
@@ -131,6 +132,7 @@ const AIProviderConfig: React.FC<AIProviderConfigProps> = ({ onSave, currentConf
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="gemini-2.0-flash-preview-image-generation">Gemini 2.0 Flash Preview</SelectItem>
+                    <SelectItem value="imagen-3.0-generate-002">Imagen 3.0</SelectItem>
                   </SelectContent>
                 </Select>
               )}
