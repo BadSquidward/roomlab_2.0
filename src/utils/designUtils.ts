@@ -10,7 +10,7 @@ export const getBudgetText = (value: number) => {
   }
 };
 
-// Sample BOQ data for the design result page
+// Sample BOQ data for fallback/testing purposes
 export const sampleBOQ = [
   { name: "Modern Gray Sofa", dimensions: "220 × 85 × 80 cm", quantity: 1, price: 29990 },
   { name: "Coffee Table - Oak", dimensions: "120 × 60 × 45 cm", quantity: 1, price: 15490 },

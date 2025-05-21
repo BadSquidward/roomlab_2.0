@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
-import { getAIProvider, DesignGenerationRequest, defaultApiKeys } from "@/utils/aiProviders";
+import { getAIProvider, DesignGenerationRequest, defaultApiKeys, FurnitureItem } from "@/utils/aiProviders";
 import BillOfQuantities from "./BillOfQuantities";
 import DesignDetails from "./DesignDetails";
 import RegenerationComments from "./RegenerationComments";
@@ -16,7 +16,8 @@ const DesignResult = () => {
   const [regenerationComment, setRegenerationComment] = useState("");
   const [designData, setDesignData] = useState({
     ...sampleDesign,
-    caption: "" // Add caption field to track AI-generated text
+    caption: "", // Add caption field to track AI-generated text
+    furniture: sampleBOQ // Initialize with sample furniture items
   });
   const [selectedProvider] = useState("openai"); // Default to OpenAI
   
@@ -82,14 +83,15 @@ const DesignResult = () => {
       const result = await generateDesignWithAI(false, "openai", request);
       
       if (result) {
-        // Create new design data object
+        // Create new design data object with furniture items
         const newDesignData = {
           imageUrl: result.imageUrl,
           roomType: formData.roomType || "living-room",
           style: formData.style || "Modern",
           colorScheme: formData.colorScheme || "Neutral",
           dimensions: `${formData.length || "4"}m × ${formData.width || "3"}m × ${formData.height || "2.5"}m`,
-          caption: result.caption || "" // Store caption in design data
+          caption: result.caption || "", // Store caption in design data
+          furniture: result.furniture || [] // Store furniture items in design data
         };
         
         // Update state and localStorage
@@ -214,11 +216,12 @@ const DesignResult = () => {
       const result = await generateDesignWithAI(true, "openai");
       
       if (result) {
-        // Update design with new image
+        // Update design with new image and furniture items
         const updatedDesignData = {
           ...designData,
           imageUrl: result.imageUrl,
-          caption: result.caption || designData.caption // Update caption if provided
+          caption: result.caption || designData.caption, // Update caption if provided
+          furniture: result.furniture || designData.furniture // Update furniture if provided
         };
         
         setDesignData(updatedDesignData);
@@ -324,7 +327,7 @@ const DesignResult = () => {
         {/* Bill of Quantities (BOQ) Section */}
         <div>
           <BillOfQuantities 
-            items={sampleBOQ} 
+            items={designData.furniture || sampleBOQ} 
             onNavigateToDesign={handleNavigateToDesign}
           />
         </div>

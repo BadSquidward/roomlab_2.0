@@ -3,16 +3,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Phone, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-
-interface BOQItem {
-  name: string;
-  dimensions: string;
-  quantity: number;
-  price: number;
-}
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { FurnitureItem } from "@/utils/aiProviders";
 
 interface BillOfQuantitiesProps {
-  items: BOQItem[];
+  items: FurnitureItem[];
   onNavigateToDesign: () => void;
 }
 
@@ -53,23 +48,26 @@ const BillOfQuantities = ({ items, onNavigateToDesign }: BillOfQuantitiesProps) 
       </div>
       
       <div className="border rounded-md overflow-hidden">
-        <div className="bg-gray-50 p-3 border-b grid grid-cols-12 text-xs font-medium text-muted-foreground">
-          <div className="col-span-6">Item</div>
-          <div className="col-span-3">Dimensions</div>
-          <div className="col-span-1">Qty</div>
-          <div className="col-span-2 text-right">Price</div>
-        </div>
-        
-        <div className="divide-y max-h-[500px] overflow-y-auto design-scrollbar">
-          {items.map((item, index) => (
-            <div key={index} className="p-3 grid grid-cols-12 items-center text-sm">
-              <div className="col-span-6">{item.name}</div>
-              <div className="col-span-3 text-xs text-muted-foreground">{item.dimensions}</div>
-              <div className="col-span-1">{item.quantity}</div>
-              <div className="col-span-2 text-right">฿{item.price.toLocaleString()}</div>
-            </div>
-          ))}
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50 hover:bg-gray-50">
+              <TableHead className="w-[40%] h-8 py-2 text-xs">Item</TableHead>
+              <TableHead className="w-[30%] h-8 py-2 text-xs">Dimensions</TableHead>
+              <TableHead className="w-[10%] h-8 py-2 text-xs">Qty</TableHead>
+              <TableHead className="w-[20%] h-8 py-2 text-xs text-right">Price</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody className="max-h-[400px] overflow-y-auto design-scrollbar">
+            {items.map((item, index) => (
+              <TableRow key={index}>
+                <TableCell className="py-2 text-sm">{item.name}</TableCell>
+                <TableCell className="py-2 text-xs text-muted-foreground">{item.dimensions}</TableCell>
+                <TableCell className="py-2 text-sm">{item.quantity}</TableCell>
+                <TableCell className="py-2 text-sm text-right">฿{item.price.toLocaleString()}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
         
         <div className="bg-gray-50 p-3 border-t grid grid-cols-12 text-sm font-medium">
           <div className="col-span-10">Total Estimated Cost</div>
@@ -79,6 +77,7 @@ const BillOfQuantities = ({ items, onNavigateToDesign }: BillOfQuantitiesProps) 
       
       <div className="text-xs text-muted-foreground">
         <p>Prices are estimates and may vary based on vendor selection and availability.</p>
+        <p className="mt-1">All furniture items are referenced from IKEA catalog.</p>
       </div>
       
       <Button

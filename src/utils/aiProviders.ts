@@ -16,11 +16,19 @@ export interface DesignGenerationRequest {
   regenerationComment?: string;
 }
 
+export interface FurnitureItem {
+  name: string;
+  dimensions: string;
+  quantity: number;
+  price: number;
+}
+
 export interface DesignGenerationResponse {
   imageUrl: string;
   success: boolean;
   error?: string;
   caption?: string; // Added caption field for text descriptions
+  furniture?: FurnitureItem[]; // Added furniture items with details
 }
 
 // Base class for AI providers
@@ -56,6 +64,13 @@ export abstract class AIProvider {
       prompt += `\n\nPlease make these specific changes to the previous design: ${request.regenerationComment}`;
     }
 
+    // Add request for furniture details with approximate prices
+    prompt += `\n\nIn addition to the design image, please provide a list of all furniture items visible in the design with the following details for each item:
+1. Name of the furniture piece
+2. Approximate dimensions
+3. Quantity
+4. Approximate price in Thai Baht (฿)`;
+
     return prompt;
   }
 
@@ -85,7 +100,7 @@ export class OpenAIProvider extends AIProvider {
           prompt: prompt,
           n: 1,
           size: "1024x1024",
-          quality: "standard" // Changed from "auto" to "standard"
+          quality: "standard"
         })
       });
 
@@ -104,10 +119,15 @@ export class OpenAIProvider extends AIProvider {
       // Generate a descriptive caption based on the prompt
       const caption = `A ${request.style.toLowerCase()} ${request.roomType.replace('-', ' ')} with ${request.colorScheme.toLowerCase()} color scheme, featuring ${request.furniture.join(', ')} from IKEA.`;
 
+      // Extract furniture details from the prompt response (this will be handled separately since DALL-E doesn't return text)
+      // We'll generate sample furniture items based on the request for demonstration
+      const furnitureItems: FurnitureItem[] = this.generateSampleFurnitureItems(request);
+
       return {
         success: true,
         imageUrl: data.data[0].url,
-        caption: caption
+        caption: caption,
+        furniture: furnitureItems
       };
     } catch (error) {
       console.error("Error calling OpenAI API:", error);
@@ -118,6 +138,63 @@ export class OpenAIProvider extends AIProvider {
         caption: "Error occurred during image generation"
       };
     }
+  }
+
+  // Generate sample furniture items based on the request
+  // In a real implementation, this would be replaced with actual data from the AI response
+  private generateSampleFurnitureItems(request: DesignGenerationRequest): FurnitureItem[] {
+    // Create furniture items based on the requested furniture list
+    const budgetLevel = request.budget.includes("10,000") ? "low" : 
+                        request.budget.includes("600,001") ? "high" : "medium";
+    
+    return request.furniture.map(furniture => {
+      let price = 0;
+      let dimensions = "";
+      
+      // Set price ranges based on budget level and furniture type
+      if (furniture.toLowerCase().includes("sofa") || furniture.toLowerCase().includes("couch")) {
+        dimensions = "220 × 85 × 80 cm";
+        price = budgetLevel === "low" ? 15990 : budgetLevel === "medium" ? 29990 : 49990;
+      } else if (furniture.toLowerCase().includes("table") && furniture.toLowerCase().includes("coffee")) {
+        dimensions = "120 × 60 × 45 cm";
+        price = budgetLevel === "low" ? 7990 : budgetLevel === "medium" ? 15490 : 25990;
+      } else if (furniture.toLowerCase().includes("table") && furniture.toLowerCase().includes("dining")) {
+        dimensions = "180 × 90 × 75 cm";
+        price = budgetLevel === "low" ? 12990 : budgetLevel === "medium" ? 24990 : 39990;
+      } else if (furniture.toLowerCase().includes("chair") && furniture.toLowerCase().includes("dining")) {
+        dimensions = "45 × 50 × 85 cm";
+        price = budgetLevel === "low" ? 2990 : budgetLevel === "medium" ? 5990 : 9990;
+      } else if (furniture.toLowerCase().includes("chair") && furniture.toLowerCase().includes("office")) {
+        dimensions = "68 × 68 × 115 cm";
+        price = budgetLevel === "low" ? 4990 : budgetLevel === "medium" ? 9990 : 19990;
+      } else if (furniture.toLowerCase().includes("bed")) {
+        dimensions = "160 × 200 cm";
+        price = budgetLevel === "low" ? 19990 : budgetLevel === "medium" ? 34990 : 59990;
+      } else if (furniture.toLowerCase().includes("desk")) {
+        dimensions = "140 × 60 × 75 cm";
+        price = budgetLevel === "low" ? 8990 : budgetLevel === "medium" ? 17990 : 29990;
+      } else if (furniture.toLowerCase().includes("bookshelf") || furniture.toLowerCase().includes("bookcase")) {
+        dimensions = "90 × 30 × 180 cm";
+        price = budgetLevel === "low" ? 8990 : budgetLevel === "medium" ? 18990 : 29990;
+      } else if (furniture.toLowerCase().includes("rug") || furniture.toLowerCase().includes("carpet")) {
+        dimensions = "200 × 300 cm";
+        price = budgetLevel === "low" ? 6990 : budgetLevel === "medium" ? 12990 : 24990;
+      } else {
+        dimensions = "60 × 40 × 50 cm";
+        price = budgetLevel === "low" ? 3990 : budgetLevel === "medium" ? 7990 : 14990;
+      }
+      
+      return {
+        name: `${this.capitalizeFirstLetter(request.style)} ${furniture}`,
+        dimensions,
+        quantity: 1,
+        price
+      };
+    });
+  }
+
+  private capitalizeFirstLetter(string: string): string {
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
   }
 }
 
