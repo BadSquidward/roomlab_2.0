@@ -84,7 +84,7 @@ export class OpenAIProvider extends AIProvider {
           prompt: prompt,
           n: 1,
           size: "1024x1024",
-          quality: "hd" // Changed from "standard" to "hd" which is now "high"
+          quality: "auto" // Changed from "standard" to "hd" which is now "high"
         })
       });
 
