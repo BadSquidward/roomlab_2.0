@@ -84,8 +84,8 @@ export class OpenAIProvider extends AIProvider {
           prompt: prompt,
           n: 1,
           size: "1024x1024",
-          quality: "standard",
-          response_format: "url"
+          quality: "standard"
+          // Removed 'response_format' parameter that was causing the error
         })
       });
 
