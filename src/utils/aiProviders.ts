@@ -84,8 +84,7 @@ export class OpenAIProvider extends AIProvider {
           prompt: prompt,
           n: 1,
           size: "1024x1024",
-          quality: "standard"
-          // Removed 'response_format' parameter that was causing the error
+          quality: "hd" // Changed from "standard" to "hd" which is now "high"
         })
       });
 
