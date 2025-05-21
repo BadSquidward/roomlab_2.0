@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
@@ -144,7 +143,7 @@ const DesignResult = () => {
       const roomTypeFromPath = pathParts[pathParts.length - 2] || "living-room";
       
       // Create provider instance with OpenAI
-      const aiProvider = getAIProvider("openai", apiKey, "gpt-image-1");
+      const aiProvider = getAIProvider("openai", apiKey, "dall-e-3");
       
       console.log("Generating design with OpenAI provider");
       

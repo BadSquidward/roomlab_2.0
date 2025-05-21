@@ -102,7 +102,6 @@ const AIProviderConfig: React.FC<AIProviderConfigProps> = ({ onSave, currentConf
                   <SelectValue placeholder="Select model" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="gpt-image-1">GPT Image 1</SelectItem>
                   <SelectItem value="dall-e-3">DALL-E 3</SelectItem>
                   <SelectItem value="dall-e-2">DALL-E 2</SelectItem>
                 </SelectContent>
