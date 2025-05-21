@@ -24,14 +24,14 @@ const designsData = [
   {
     id: 3,
     title: "Industrial Style Office",
-    image: "https://images.ctfassets.net/skkgb8fetgpj/7pDCnhKn7qDn7yCuYAoC9m/a686986d2669f11b404f07886f6c435e/Create_your_own_boho_living_room.jpeg?q=75&r=6",
+    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1000&auto=format&fit=crop",
     style: "Industrial",
     likes: 172
   },
   {
     id: 4,
     title: "Bohemian Living Space",
-    image: "https://images.unsplash.com/photo-1585128903994-9788298ef4b3?q=80&w=1000&auto=format&fit=crop",
+    image: "https://plus.unsplash.com/premium_photo-1661876005092-57b7b5d4060d?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     style: "Bohemian",
     likes: 156
   },
