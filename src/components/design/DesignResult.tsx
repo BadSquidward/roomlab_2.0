@@ -18,7 +18,7 @@ const DesignResult = () => {
     ...sampleDesign,
     caption: "" // Add caption field to track AI-generated text
   });
-  const [selectedProvider] = useState("gemini"); // Default to Gemini
+  const [selectedProvider] = useState("openai"); // Default to OpenAI
   
   // Load data from localStorage
   useEffect(() => {
@@ -79,7 +79,7 @@ const DesignResult = () => {
       };
       
       // Generate design with AI
-      const result = await generateDesignWithAI(false, selectedProvider, request);
+      const result = await generateDesignWithAI(false, "openai", request);
       
       if (result) {
         // Create new design data object
@@ -123,17 +123,17 @@ const DesignResult = () => {
   // Generate design using AI provider
   const generateDesignWithAI = async (
     isRegeneration: boolean = false, 
-    providerName: string = "gemini", 
+    providerName: string = "openai", 
     customRequest?: DesignGenerationRequest
   ) => {
     try {
-      // Get API key for the selected provider
-      const apiKey = defaultApiKeys[providerName as keyof typeof defaultApiKeys];
+      // Get API key for OpenAI
+      const apiKey = defaultApiKeys.openai;
       
       if (!apiKey) {
         toast({
           title: "API Key Not Available",
-          description: `No API key available for ${providerName}. Please contact support.`,
+          description: "No OpenAI API key available. Please contact support.",
           variant: "destructive",
         });
         return null;
@@ -143,10 +143,10 @@ const DesignResult = () => {
       const pathParts = window.location.pathname.split('/');
       const roomTypeFromPath = pathParts[pathParts.length - 2] || "living-room";
       
-      // Create provider instance with default model for the provider
-      const aiProvider = getAIProvider(providerName, apiKey);
+      // Create provider instance with OpenAI
+      const aiProvider = getAIProvider("openai", apiKey, "gpt-image-1");
       
-      console.log(`Generating design with ${providerName} provider`);
+      console.log("Generating design with OpenAI provider");
       
       // Prepare request
       const request = customRequest || {
@@ -175,7 +175,7 @@ const DesignResult = () => {
       if (!result.success) {
         toast({
           title: "Generation Failed",
-          description: result.error || `Failed to generate design with ${providerName}`,
+          description: result.error || "Failed to generate design with OpenAI",
           variant: "destructive",
         });
         return null;
@@ -211,7 +211,7 @@ const DesignResult = () => {
     
     try {
       // Generate new design with regeneration comments
-      const result = await generateDesignWithAI(true, "gemini");
+      const result = await generateDesignWithAI(true, "openai");
       
       if (result) {
         // Update design with new image

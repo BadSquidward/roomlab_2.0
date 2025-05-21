@@ -71,8 +71,6 @@ const AIProviderConfig: React.FC<AIProviderConfigProps> = ({ onSave, currentConf
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="openai">OpenAI</SelectItem>
-                  <SelectItem value="stabilityai">Stability AI</SelectItem>
-                  <SelectItem value="gemini">Gemini</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -96,46 +94,19 @@ const AIProviderConfig: React.FC<AIProviderConfigProps> = ({ onSave, currentConf
               Model
             </Label>
             <div className="col-span-3">
-              {config.provider === "openai" ? (
-                <Select 
-                  value={config.model} 
-                  onValueChange={(value) => setConfig({ ...config, model: value })}
-                >
-                  <SelectTrigger id="model">
-                    <SelectValue placeholder="Select model" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="dall-e-3">DALL-E 3</SelectItem>
-                    <SelectItem value="dall-e-2">DALL-E 2</SelectItem>
-                  </SelectContent>
-                </Select>
-              ) : config.provider === "stabilityai" ? (
-                <Select 
-                  value={config.model} 
-                  onValueChange={(value) => setConfig({ ...config, model: value })}
-                >
-                  <SelectTrigger id="model">
-                    <SelectValue placeholder="Select model" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="stable-diffusion-xl">Stable Diffusion XL</SelectItem>
-                    <SelectItem value="stable-diffusion-3">Stable Diffusion 3</SelectItem>
-                  </SelectContent>
-                </Select>
-              ) : (
-                <Select 
-                  value={config.model} 
-                  onValueChange={(value) => setConfig({ ...config, model: value })}
-                >
-                  <SelectTrigger id="model">
-                    <SelectValue placeholder="Select model" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="gemini-2.0-flash-preview-image-generation">Gemini 2.0 Flash Preview</SelectItem>
-                    <SelectItem value="imagen-3.0-generate-002">Imagen 3.0</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
+              <Select 
+                value={config.model} 
+                onValueChange={(value) => setConfig({ ...config, model: value })}
+              >
+                <SelectTrigger id="model">
+                  <SelectValue placeholder="Select model" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="gpt-image-1">GPT Image 1</SelectItem>
+                  <SelectItem value="dall-e-3">DALL-E 3</SelectItem>
+                  <SelectItem value="dall-e-2">DALL-E 2</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>

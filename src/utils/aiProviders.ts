@@ -1,3 +1,4 @@
+
 // AI Provider Integration Utilities
 
 export interface DesignGenerationRequest {
@@ -63,13 +64,14 @@ export abstract class AIProvider {
 
 // OpenAI Provider implementation
 export class OpenAIProvider extends AIProvider {
-  constructor(apiKey: string, model: string = "dall-e-3") {
+  constructor(apiKey: string, model: string = "gpt-image-1") {
     super(apiKey, "https://api.openai.com/v1/images/generations", model);
   }
 
   async generateDesign(request: DesignGenerationRequest): Promise<DesignGenerationResponse> {
     try {
       const prompt = this.formatPrompt(request);
+      console.log("Generating design with OpenAI using prompt:", prompt);
       
       const response = await fetch(this.baseUrl, {
         method: "POST",
@@ -94,280 +96,26 @@ export class OpenAIProvider extends AIProvider {
         return {
           success: false,
           imageUrl: "",
-          error: data.error?.message || "Error generating image"
+          error: data.error?.message || "Error generating image",
+          caption: "Failed to generate image"
         };
       }
 
+      // Generate a descriptive caption based on the prompt
+      const caption = `A ${request.style.toLowerCase()} ${request.roomType.replace('-', ' ')} with ${request.colorScheme.toLowerCase()} color scheme, featuring ${request.furniture.join(', ')}.`;
+
       return {
         success: true,
-        imageUrl: data.data[0].url
+        imageUrl: data.data[0].url,
+        caption: caption
       };
     } catch (error) {
       console.error("Error calling OpenAI API:", error);
       return {
         success: false,
         imageUrl: "",
-        error: "Failed to connect to OpenAI API"
-      };
-    }
-  }
-}
-
-// Stability AI Provider implementation
-export class StabilityAIProvider extends AIProvider {
-  constructor(apiKey: string, model: string = "stable-diffusion-xl") {
-    super(apiKey, "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image", model);
-  }
-
-  async generateDesign(request: DesignGenerationRequest): Promise<DesignGenerationResponse> {
-    try {
-      const prompt = this.formatPrompt(request);
-      
-      const response = await fetch(this.baseUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${this.apiKey}`,
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({
-          text_prompts: [
-            {
-              text: prompt,
-              weight: 1
-            }
-          ],
-          cfg_scale: 7,
-          height: 1024,
-          width: 1024,
-          samples: 1,
-          steps: 50
-        })
-      });
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-        console.error("Stability AI API error:", data);
-        return {
-          success: false,
-          imageUrl: "",
-          error: data.message || "Error generating image"
-        };
-      }
-
-      // Extract image data from response
-      const imageBase64 = data.artifacts[0].base64;
-      const imageUrl = `data:image/png;base64,${imageBase64}`;
-
-      return {
-        success: true,
-        imageUrl
-      };
-    } catch (error) {
-      console.error("Error calling Stability AI API:", error);
-      return {
-        success: false,
-        imageUrl: "",
-        error: "Failed to connect to Stability AI API"
-      };
-    }
-  }
-}
-
-// Updated Gemini Provider implementation with proper handling of image and text response
-export class GeminiProvider extends AIProvider {
-  constructor(apiKey: string, model: string = "gemini-2.0-flash-preview-image-generation") {
-    super(apiKey, "https://generativelanguage.googleapis.com/v1beta/models", model);
-  }
-
-  async generateDesign(request: DesignGenerationRequest): Promise<DesignGenerationResponse> {
-    try {
-      const prompt = this.formatPrompt(request);
-      const fullUrl = `${this.baseUrl}/${this.model}:generateContent?key=${this.apiKey}`;
-      
-      console.log("Requesting Gemini image generation with URL:", fullUrl.replace(this.apiKey, "[REDACTED]"));
-      console.log("Using prompt:", prompt);
-      
-      // Updated request format - using only text prompt without function calling
-      const response = await fetch(fullUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: prompt
-                }
-              ]
-            }
-          ],
-          generationConfig: {
-            temperature: 0.4,
-            topK: 32,
-            topP: 1,
-            maxOutputTokens: 2048
-          }
-        })
-      });
-
-      const data = await response.json();
-      console.log("Gemini API response:", JSON.stringify(data));
-      
-      if (!response.ok) {
-        console.error("Gemini API error:", data);
-        return {
-          success: false,
-          imageUrl: "",
-          error: data.error?.message || "Error generating image"
-        };
-      }
-
-      // Extract image data and text from Gemini response
-      let imageUrl = "";
-      let caption = "";
-      
-      try {
-        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-          const parts = data.candidates[0].content.parts;
-          
-          // Process each part to extract image and text
-          for (const part of parts) {
-            // Extract image if available
-            if (part.inlineData && part.inlineData.mimeType.startsWith('image/')) {
-              imageUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-            } 
-            // Extract text if available
-            else if (part.text) {
-              caption += part.text;
-            }
-          }
-        }
-        
-        if (!imageUrl) {
-          console.log("No image found in Gemini response, using Unsplash as fallback");
-          
-          // Generate a tailored search term based on the request
-          const roomType = request.roomType.replace('-', ' ');
-          let searchTerms = `interior,${request.style.toLowerCase()},${roomType}`;
-          
-          // Add regeneration comment keywords if available
-          if (request.regenerationComment && request.regenerationComment.trim() !== "") {
-            // Extract key descriptive words from the regeneration comment
-            const keywords = request.regenerationComment
-              .split(/\s+/)
-              .filter(word => word.length > 3)  // Only use words longer than 3 chars
-              .slice(0, 3)  // Take up to 3 keywords
-              .join(',');
-            
-            if (keywords) {
-              searchTerms += `,${keywords}`;
-            }
-          }
-          
-          // Add color scheme to search terms
-          searchTerms += `,${request.colorScheme.toLowerCase()}`;
-          
-          const encodedSearchTerms = encodeURIComponent(searchTerms);
-          // Use random parameter to avoid caching and get different images
-          const randomParam = Math.floor(Math.random() * 1000);
-          imageUrl = `https://source.unsplash.com/featured/?${encodedSearchTerms}&random=${randomParam}`;
-          
-          // Generate a default caption if none was provided
-          if (!caption) {
-            caption = `A ${request.style} ${request.roomType.replace('-', ' ')} with ${request.colorScheme} color scheme.`;
-          }
-        }
-        
-        return {
-          success: true,
-          imageUrl,
-          caption
-        };
-      } catch (error) {
-        console.error("Error parsing Gemini API response:", error);
-        return {
-          success: false,
-          imageUrl: "",
-          error: "Failed to parse Gemini API response"
-        };
-      }
-    } catch (error) {
-      console.error("Error calling Gemini API:", error);
-      return {
-        success: false,
-        imageUrl: "",
-        error: "Failed to connect to Gemini API"
-      };
-    }
-  }
-  
-  // Keep the helper method for compatibility, but simplify it
-  private async generateImageOnly(prompt: string): Promise<DesignGenerationResponse> {
-    try {
-      const fullUrl = `${this.baseUrl}/gemini-pro-vision:generateContent?key=${this.apiKey}`;
-      
-      const response = await fetch(fullUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: `Generate a photorealistic image based on this description: ${prompt}`
-                }
-              ]
-            }
-          ],
-          generationConfig: {
-            temperature: 0.4,
-            topK: 32,
-            topP: 1,
-            maxOutputTokens: 2048
-          }
-        })
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        return {
-          success: false,
-          imageUrl: "",
-          error: data.error?.message || "Error generating image"
-        };
-      }
-      
-      let imageUrl = "";
-      
-      // Try to extract image data
-      if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-        const parts = data.candidates[0].content.parts;
-        
-        for (const part of parts) {
-          if (part.inlineData && part.inlineData.mimeType.startsWith('image/')) {
-            imageUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-            break;
-          }
-        }
-      }
-      
-      return {
-        success: !!imageUrl,
-        imageUrl,
-        caption: prompt
-      };
-    } catch (error) {
-      return {
-        success: false,
-        imageUrl: "",
-        error: "Failed to generate image in follow-up request"
+        error: "Failed to connect to OpenAI API",
+        caption: "Error occurred during image generation"
       };
     }
   }
@@ -375,22 +123,11 @@ export class GeminiProvider extends AIProvider {
 
 // Factory function to get the appropriate provider
 export function getAIProvider(providerName: string, apiKey: string, model?: string): AIProvider {
-  switch (providerName.toLowerCase()) {
-    case "openai":
-      return new OpenAIProvider(apiKey, model || "dall-e-3");
-    case "stabilityai":
-      return new StabilityAIProvider(apiKey, model || "stable-diffusion-xl");
-    case "gemini":
-      return new GeminiProvider(apiKey, model || "gemini-2.0-flash-preview-image-generation");
-    default:
-      // Default to OpenAI if provider name is not recognized
-      return new OpenAIProvider(apiKey, "dall-e-3");
-  }
+  // Always return OpenAI provider regardless of the requested provider
+  return new OpenAIProvider(apiKey, model || "gpt-image-1");
 }
 
-// Updated default API keys with the OpenAI API key
+// Updated default API key for OpenAI
 export const defaultApiKeys = {
-  openai: "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", // Updated OpenAI API key
-  stabilityai: "sk-your-stability-api-key",
-  gemini: "AIzaSyA5WAO7LtMrT9BvUkR_3t7lrDRTsOeBm0g"
+  openai: "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"
 };
