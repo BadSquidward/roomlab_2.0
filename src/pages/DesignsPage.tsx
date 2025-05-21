@@ -24,7 +24,7 @@ const designsData = [
   {
     id: 3,
     title: "Industrial Style Office",
-    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1000&auto=format&fit=crop",
+    image: "https://images.ctfassets.net/skkgb8fetgpj/7pDCnhKn7qDn7yCuYAoC9m/a686986d2669f11b404f07886f6c435e/Create_your_own_boho_living_room.jpeg?q=75&r=6",
     style: "Industrial",
     likes: 172
   },
