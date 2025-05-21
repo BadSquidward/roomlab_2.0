@@ -1,4 +1,3 @@
-
 // AI Provider Integration Utilities
 
 export interface DesignGenerationRequest {
@@ -384,13 +383,14 @@ export function getAIProvider(providerName: string, apiKey: string, model?: stri
     case "gemini":
       return new GeminiProvider(apiKey, model || "gemini-2.0-flash-preview-image-generation");
     default:
-      throw new Error(`Unsupported AI provider: ${providerName}`);
+      // Default to OpenAI if provider name is not recognized
+      return new OpenAIProvider(apiKey, "dall-e-3");
   }
 }
 
-// Updated default API keys with the new Gemini API key
+// Updated default API keys with the OpenAI API key
 export const defaultApiKeys = {
-  openai: "sk-your-openai-api-key", // Replace with your actual API key
-  stabilityai: "sk-your-stability-api-key", // Replace with your actual API key
-  gemini: "AIzaSyA5WAO7LtMrT9BvUkR_3t7lrDRTsOeBm0g" // Updated Gemini API key
+  openai: "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", // Updated OpenAI API key
+  stabilityai: "sk-your-stability-api-key",
+  gemini: "AIzaSyA5WAO7LtMrT9BvUkR_3t7lrDRTsOeBm0g"
 };

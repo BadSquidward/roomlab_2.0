@@ -1,4 +1,3 @@
-
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,13 +25,6 @@ const popularDesigns = [
     image: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1000&auto=format&fit=crop",
     style: "Industrial",
     likes: 172
-  },
-  {
-    id: 4,
-    title: "Bohemian Living Space",
-    image: "https://images.unsplash.com/photo-1585128903994-9788298ef4b3?q=80&w=1000&auto=format&fit=crop",
-    style: "Bohemian",
-    likes: 156
   },
   {
     id: 5,
