@@ -30,7 +30,7 @@ const AIProviderConfig: React.FC<AIProviderConfigProps> = ({ onSave, currentConf
   const [config, setConfig] = useState<AIProviderSettings>(
     currentConfig || {
       provider: "gemini",
-      apiKey: "AIzaSyA5WAO7LtMrT9BvUkR_3t7lrDRTsOeBm0g",
+      apiKey: "Please input API Key",
       model: "gemini-2.0-flash-preview-image-generation"
     }
   );
