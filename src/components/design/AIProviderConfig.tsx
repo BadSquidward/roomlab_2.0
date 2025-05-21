@@ -31,7 +31,7 @@ const AIProviderConfig: React.FC<AIProviderConfigProps> = ({ onSave, currentConf
     currentConfig || {
       provider: "openai",
       apiKey: "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",
-      model: "gpt-image-1"
+      model: "dall-e-3"
     }
   );
   const [isOpen, setIsOpen] = useState(false);

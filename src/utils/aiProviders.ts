@@ -64,7 +64,7 @@ export abstract class AIProvider {
 
 // OpenAI Provider implementation
 export class OpenAIProvider extends AIProvider {
-  constructor(apiKey: string, model: string = "gpt-image-1") {
+  constructor(apiKey: string, model: string = "dall-e-3") {
     super(apiKey, "https://api.openai.com/v1/images/generations", model);
   }
 
