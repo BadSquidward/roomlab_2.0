@@ -43,7 +43,8 @@ export abstract class AIProvider {
 - Color scheme: ${request.colorScheme}
 - Room dimensions: ${request.dimensions.length}m × ${request.dimensions.width}m × ${request.dimensions.height}m
 - Budget range: ${request.budget}
-- Required furniture: ${request.furniture.join(", ")}`;
+- Required furniture: ${request.furniture.join(", ")}
+- All furniture designs should be referenced from IKEA furniture catalog`;
 
     // Add special requirements if provided
     if (request.specialRequirements && request.specialRequirements.trim() !== "") {
@@ -101,7 +102,7 @@ export class OpenAIProvider extends AIProvider {
       }
 
       // Generate a descriptive caption based on the prompt
-      const caption = `A ${request.style.toLowerCase()} ${request.roomType.replace('-', ' ')} with ${request.colorScheme.toLowerCase()} color scheme, featuring ${request.furniture.join(', ')}.`;
+      const caption = `A ${request.style.toLowerCase()} ${request.roomType.replace('-', ' ')} with ${request.colorScheme.toLowerCase()} color scheme, featuring ${request.furniture.join(', ')} from IKEA.`;
 
       return {
         success: true,
