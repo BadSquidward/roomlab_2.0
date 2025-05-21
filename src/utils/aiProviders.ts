@@ -84,7 +84,7 @@ export class OpenAIProvider extends AIProvider {
           prompt: prompt,
           n: 1,
           size: "1024x1024",
-          quality: "auto" // Changed from "standard" to "hd" which is now "high"
+          quality: "hd" // Using "hd" for high quality
         })
       });
 
@@ -123,10 +123,10 @@ export class OpenAIProvider extends AIProvider {
 // Factory function to get the appropriate provider
 export function getAIProvider(providerName: string, apiKey: string, model?: string): AIProvider {
   // Always return OpenAI provider regardless of the requested provider
-  return new OpenAIProvider(apiKey, model || "gpt-image-1");
+  return new OpenAIProvider(apiKey, model || "dall-e-3");
 }
 
 // Updated default API key for OpenAI
 export const defaultApiKeys = {
-  openai: "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"
+  openai: "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"
 };
