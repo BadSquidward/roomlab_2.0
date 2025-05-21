@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -50,8 +51,11 @@ const DesignPreferencesForm: React.FC<DesignPreferencesFormProps> = ({ roomType,
     specialRequirements: "", // New field for additional requirements
   });
 
-  // Update style when selectedStyle prop changes
+  // Update style when selectedStyle prop changes and clear previous design data
   useEffect(() => {
+    // Clear previous design result when starting a new design
+    localStorage.removeItem('designResult');
+    
     if (selectedStyle && selectedStyle !== formData.style) {
       setFormData(prev => ({ ...prev, style: selectedStyle, roomType }));
     } else {
@@ -125,6 +129,9 @@ const DesignPreferencesForm: React.FC<DesignPreferencesFormProps> = ({ roomType,
     }
     
     setIsLoading(true);
+    
+    // Clear any previous design result
+    localStorage.removeItem('designResult');
     
     // Store form data for the design result page to use
     localStorage.setItem('designFormData', JSON.stringify(formData));

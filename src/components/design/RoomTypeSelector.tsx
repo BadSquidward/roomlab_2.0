@@ -96,6 +96,10 @@ const RoomTypeSelector: React.FC<RoomTypeSelectorProps> = ({ onSelectRoomType })
   const [selectedRoomType, setSelectedRoomType] = useState<string | null>(null);
 
   const handleSelect = (roomTypeId: string) => {
+    // Clear any previous design data when selecting a new room type
+    localStorage.removeItem('designFormData');
+    localStorage.removeItem('designResult');
+    
     setSelectedRoomType(roomTypeId);
     onSelectRoomType(roomTypeId);
   };
