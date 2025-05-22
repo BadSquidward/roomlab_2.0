@@ -9,9 +9,10 @@ import { FurnitureItem } from "@/utils/aiProviders";
 interface BillOfQuantitiesProps {
   items: FurnitureItem[];
   onNavigateToDesign: () => void;
+  isLoading?: boolean;
 }
 
-const BillOfQuantities = ({ items, onNavigateToDesign }: BillOfQuantitiesProps) => {
+const BillOfQuantities = ({ items, onNavigateToDesign, isLoading = false }: BillOfQuantitiesProps) => {
   const { toast } = useToast();
   const [isContacting, setIsContacting] = useState(false);
   
@@ -58,14 +59,31 @@ const BillOfQuantities = ({ items, onNavigateToDesign }: BillOfQuantitiesProps) 
             </TableRow>
           </TableHeader>
           <TableBody className="max-h-[400px] overflow-y-auto design-scrollbar">
-            {items.map((item, index) => (
-              <TableRow key={index}>
-                <TableCell className="py-2 text-sm">{item.name}</TableCell>
-                <TableCell className="py-2 text-xs text-muted-foreground">{item.dimensions}</TableCell>
-                <TableCell className="py-2 text-sm">{item.quantity}</TableCell>
-                <TableCell className="py-2 text-sm text-right">฿{item.price.toLocaleString()}</TableCell>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={4} className="h-40 text-center">
+                  <div className="flex flex-col items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin mb-2 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Generating Bill of Quantities...</span>
+                  </div>
+                </TableCell>
               </TableRow>
-            ))}
+            ) : items.length > 0 ? (
+              items.map((item, index) => (
+                <TableRow key={index}>
+                  <TableCell className="py-2 text-sm">{item.name}</TableCell>
+                  <TableCell className="py-2 text-xs text-muted-foreground">{item.dimensions}</TableCell>
+                  <TableCell className="py-2 text-sm">{item.quantity}</TableCell>
+                  <TableCell className="py-2 text-sm text-right">฿{item.price.toLocaleString()}</TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={4} className="h-40 text-center text-muted-foreground">
+                  No furniture items available
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
         

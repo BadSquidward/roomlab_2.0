@@ -74,6 +74,27 @@ export abstract class AIProvider {
     return prompt;
   }
 
+  // Separate method for formatting BOQ prompt for Gemini
+  protected formatBOQPrompt(request: DesignGenerationRequest): string {
+    let prompt = `สร้าง BOQ จากคำขอออกแบบข้างต้นในรูปแบบตาราง มีประกอบด้วย Item, Dimensions, Qty และ ราคา
+    
+    คำขอออกแบบ:
+    - ประเภทห้อง: ${request.roomType.replace("-", " ")}
+    - สไตล์: ${request.style}
+    - โทนสี: ${request.colorScheme}
+    - ขนาดห้อง: ${request.dimensions.length}m × ${request.dimensions.width}m × ${request.dimensions.height}m
+    - งบประมาณ: ${request.budget}
+    - เฟอร์นิเจอร์ที่ต้องการ: ${request.furniture.join(", ")}
+    - เฟอร์นิเจอร์ทั้งหมดอ้างอิงจากแคตตาล็อกเฟอร์นิเจอร์ IKEA`;
+
+    // Add special requirements if provided
+    if (request.specialRequirements && request.specialRequirements.trim() !== "") {
+      prompt += `\n- ความต้องการพิเศษ: ${request.specialRequirements}`;
+    }
+
+    return prompt;
+  }
+
   // Method to be implemented by specific providers
   abstract generateDesign(request: DesignGenerationRequest): Promise<DesignGenerationResponse>;
 }
@@ -198,13 +219,179 @@ export class OpenAIProvider extends AIProvider {
   }
 }
 
+// Gemini Provider implementation
+export class GeminiProvider extends AIProvider {
+  constructor(apiKey: string, model: string = "gemini-2.0-flash-lite") {
+    super(apiKey, "https://generativelanguage.googleapis.com/v1", model);
+  }
+  
+  async generateBOQ(request: DesignGenerationRequest): Promise<FurnitureItem[]> {
+    try {
+      const boqPrompt = this.formatBOQPrompt(request);
+      console.log("Generating BOQ with Gemini using prompt:", boqPrompt);
+      
+      const response = await fetch(`${this.baseUrl}/models/${this.model}:generateContent?key=${this.apiKey}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: boqPrompt }]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.2,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 2048
+          }
+        })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        console.error("Gemini API error:", data);
+        return [];
+      }
+      
+      // Parse the Gemini response to extract furniture items
+      return this.parseBOQFromGeminiResponse(data);
+    } catch (error) {
+      console.error("Error calling Gemini API:", error);
+      return [];
+    }
+  }
+
+  private parseBOQFromGeminiResponse(data: any): FurnitureItem[] {
+    try {
+      // Access the text content from the Gemini response
+      const textContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      if (!textContent) {
+        console.error("No text content in Gemini response");
+        return [];
+      }
+      
+      // Extract table data from the text
+      // This is a simple implementation assuming a fairly consistent format
+      const lines = textContent.split("\n").filter(line => line.trim().length > 0);
+      const furnitureItems: FurnitureItem[] = [];
+      
+      let tableStarted = false;
+      
+      for (const line of lines) {
+        // Skip header lines or non-table rows
+        if (line.includes("Item") && line.includes("Dimensions") && line.includes("Qty") && line.includes("ราคา")) {
+          tableStarted = true;
+          continue;
+        }
+        
+        if (!tableStarted) continue;
+        
+        // Skip separator lines
+        if (line.includes("---") || line.includes("===")) continue;
+        
+        // Extract table cells - handle different table formats (markdown, plain text)
+        let cells: string[] = [];
+        
+        if (line.includes("|")) {
+          // Markdown table format
+          cells = line.split("|")
+            .map(cell => cell.trim())
+            .filter(cell => cell.length > 0);
+        } else {
+          // Assume space or tab delimited
+          cells = line.split(/\s{2,}|\t/)
+            .map(cell => cell.trim())
+            .filter(cell => cell.length > 0);
+        }
+        
+        if (cells.length >= 4) {
+          // Extract values from cells
+          const name = cells[0];
+          const dimensions = cells[1];
+          
+          // Parse quantity and price, handling various formats
+          let quantity = 1;
+          let price = 0;
+          
+          try {
+            quantity = parseInt(cells[2].replace(/[^\d]/g, ""));
+            
+            // Extract price - handle ฿ symbol and commas
+            const priceStr = cells[3].replace(/[^\d]/g, "");
+            price = parseInt(priceStr);
+          } catch (e) {
+            console.warn("Error parsing quantity/price:", e);
+          }
+          
+          // Only add valid items
+          if (name && dimensions && !isNaN(quantity) && !isNaN(price) && price > 0) {
+            furnitureItems.push({
+              name,
+              dimensions,
+              quantity,
+              price
+            });
+          }
+        }
+      }
+      
+      return furnitureItems;
+    } catch (error) {
+      console.error("Error parsing BOQ from Gemini response:", error);
+      return [];
+    }
+  }
+
+  async generateDesign(request: DesignGenerationRequest): Promise<DesignGenerationResponse> {
+    // For Gemini, we'll focus on generating the BOQ as we're using OpenAI for the image
+    try {
+      // Generate BOQ using Gemini
+      const furnitureItems = await this.generateBOQ(request);
+      
+      if (furnitureItems.length === 0) {
+        return {
+          success: false,
+          imageUrl: "",
+          error: "Failed to generate BOQ with Gemini",
+          furniture: []
+        };
+      }
+      
+      // Return success with furniture items
+      return {
+        success: true,
+        imageUrl: "", // We'll use OpenAI for the image
+        furniture: furnitureItems
+      };
+    } catch (error) {
+      console.error("Error generating BOQ with Gemini:", error);
+      return {
+        success: false,
+        imageUrl: "",
+        error: "An unexpected error occurred while generating the BOQ",
+        furniture: []
+      };
+    }
+  }
+}
+
 // Factory function to get the appropriate provider
 export function getAIProvider(providerName: string, apiKey: string, model?: string): AIProvider {
-  // Always return OpenAI provider regardless of the requested provider
+  if (providerName.toLowerCase() === "gemini") {
+    return new GeminiProvider(apiKey, model || "gemini-2.0-flash-lite");
+  }
+  // Default to OpenAI provider
   return new OpenAIProvider(apiKey, model || "dall-e-3");
 }
 
-// Updated API key for OpenAI
+// Updated API keys for both providers
 export const defaultApiKeys = {
-  openai: "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"
+  openai: "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",
+  gemini: "AIzaSyDGcREooKS1QaZeefR2zdE-eElbpyqN6Fc"
 };

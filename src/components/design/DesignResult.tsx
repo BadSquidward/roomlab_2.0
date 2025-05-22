@@ -13,6 +13,7 @@ const DesignResult = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingBOQ, setIsLoadingBOQ] = useState(false);
   const [regenerationComment, setRegenerationComment] = useState("");
   const [designData, setDesignData] = useState({
     ...sampleDesign,
@@ -83,7 +84,7 @@ const DesignResult = () => {
       const result = await generateDesignWithAI(false, "openai", request);
       
       if (result) {
-        // Create new design data object with furniture items
+        // Create new design data object with temporary furniture items
         const newDesignData = {
           imageUrl: result.imageUrl,
           roomType: formData.roomType || "living-room",
@@ -91,12 +92,28 @@ const DesignResult = () => {
           colorScheme: formData.colorScheme || "Neutral",
           dimensions: `${formData.length || "4"}m × ${formData.width || "3"}m × ${formData.height || "2.5"}m`,
           caption: result.caption || "", // Store caption in design data
-          furniture: result.furniture || [] // Store furniture items in design data
+          furniture: result.furniture || [] // Store temporary furniture items in design data
         };
         
         // Update state and localStorage
         setDesignData(newDesignData);
         localStorage.setItem('designResult', JSON.stringify(newDesignData));
+        
+        // Now generate BOQ with Gemini
+        setIsLoadingBOQ(true);
+        const boqResult = await generateBOQWithGemini(request);
+        setIsLoadingBOQ(false);
+        
+        if (boqResult && boqResult.length > 0) {
+          // Update design data with Gemini-generated furniture items
+          const updatedDesignData = {
+            ...newDesignData,
+            furniture: boqResult
+          };
+          
+          setDesignData(updatedDesignData);
+          localStorage.setItem('designResult', JSON.stringify(updatedDesignData));
+        }
         
         // Deduct token
         const updatedTokens = userInfo.tokens - 1;
@@ -109,6 +126,9 @@ const DesignResult = () => {
           title: "Design Generated",
           description: `1 token has been used. Remaining tokens: ${updatedTokens}`,
         });
+
+        // Clear localStorage data to allow for new design generation
+        localStorage.removeItem('designFormData');
       }
     } catch (error) {
       console.error("Error generating initial design:", error);
@@ -119,6 +139,50 @@ const DesignResult = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+  
+  // Generate BOQ using Gemini
+  const generateBOQWithGemini = async (request: DesignGenerationRequest): Promise<FurnitureItem[]> => {
+    try {
+      // Get API key for Gemini
+      const apiKey = defaultApiKeys.gemini;
+      
+      if (!apiKey) {
+        toast({
+          title: "API Key Not Available",
+          description: "No Gemini API key available. Please contact support.",
+          variant: "destructive",
+        });
+        return [];
+      }
+      
+      // Create provider instance with Gemini
+      const geminiProvider = getAIProvider("gemini", apiKey, "gemini-2.0-flash-lite");
+      
+      console.log("Generating BOQ with Gemini provider");
+      
+      // Generate BOQ
+      const result = await geminiProvider.generateDesign(request);
+      
+      if (!result.success) {
+        toast({
+          title: "BOQ Generation Failed",
+          description: result.error || "Failed to generate BOQ with Gemini",
+          variant: "destructive",
+        });
+        return [];
+      }
+      
+      return result.furniture || [];
+    } catch (error) {
+      console.error("Error generating BOQ with Gemini:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while generating the BOQ",
+        variant: "destructive",
+      });
+      return [];
     }
   };
   
@@ -212,20 +276,55 @@ const DesignResult = () => {
     setIsLoading(true);
     
     try {
-      // Generate new design with regeneration comments
-      const result = await generateDesignWithAI(true, "openai");
+      // Extract current design data for the request
+      const dimensions = designData.dimensions.split('×').map(d => d.trim().replace('m', ''));
+      
+      // Prepare request for regeneration
+      const request: DesignGenerationRequest = {
+        roomType: designData.roomType,
+        style: designData.style,
+        colorScheme: designData.colorScheme,
+        dimensions: {
+          length: dimensions[0] || "4",
+          width: dimensions[1] || "3",
+          height: dimensions[2] || "2.5"
+        },
+        budget: getBudgetText(50), // Default mid-range budget
+        furniture: designData.furniture.map(item => item.name.split(' ').slice(1).join(' ')), // Extract furniture names
+        specialRequirements: "",
+        regenerationComment: regenerationComment
+      };
+      
+      // Generate new design with OpenAI
+      const result = await generateDesignWithAI(true, "openai", request);
       
       if (result) {
-        // Update design with new image and furniture items
+        // Update design with new image and temporary furniture items
         const updatedDesignData = {
           ...designData,
           imageUrl: result.imageUrl,
           caption: result.caption || designData.caption, // Update caption if provided
-          furniture: result.furniture || designData.furniture // Update furniture if provided
+          furniture: result.furniture || designData.furniture // Update with temporary furniture if provided
         };
         
         setDesignData(updatedDesignData);
         localStorage.setItem('designResult', JSON.stringify(updatedDesignData));
+        
+        // Now generate BOQ with Gemini
+        setIsLoadingBOQ(true);
+        const boqResult = await generateBOQWithGemini(request);
+        setIsLoadingBOQ(false);
+        
+        if (boqResult && boqResult.length > 0) {
+          // Update design data with Gemini-generated furniture items
+          const finalDesignData = {
+            ...updatedDesignData,
+            furniture: boqResult
+          };
+          
+          setDesignData(finalDesignData);
+          localStorage.setItem('designResult', JSON.stringify(finalDesignData));
+        }
         
         // Deduct 1 token from the user's balance
         const updatedTokens = userInfo.tokens - 1;
@@ -241,6 +340,9 @@ const DesignResult = () => {
         
         // Reset the regeneration comment
         setRegenerationComment("");
+
+        // Clear localStorage data to allow for new design generation
+        localStorage.removeItem('designFormData');
       }
     } catch (error) {
       toast({
@@ -327,8 +429,9 @@ const DesignResult = () => {
         {/* Bill of Quantities (BOQ) Section */}
         <div>
           <BillOfQuantities 
-            items={designData.furniture || sampleBOQ} 
+            items={designData.furniture || sampleBOQ}
             onNavigateToDesign={handleNavigateToDesign}
+            isLoading={isLoadingBOQ}
           />
         </div>
       </div>
