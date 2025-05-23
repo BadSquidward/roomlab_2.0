@@ -90,10 +90,9 @@ export abstract class AIProvider {
     - เฟอร์นิเจอร์ทั้งหมดอ้างอิงจากแคตตาล็อกเฟอร์นิเจอร์ IKEA
     
     หมายเหตุสำคัญ:
-    - ราคาทั้งหมดต้องอยู่ในช่วงงบประมาณที่กำหนด
     - Item เป็นชื่อ Product และชื่อ Funiture เท่านั้น
     - Dimensions: ให้อยู่ใแน Pattern กว้าง x ยาว x สูง
-    #- ราคาเฟอร์นิเจอร์ต้องสมเหตุสมผลตามราคา IKEA จริง เช่น โซฟา ฿15,000-50,000, โต๊ะกาแฟ ฿2,000-15,000, เก้าอี้ ฿1,500-9,000
+    - Cost หากไม่มีราคาในข้อมูล ให้ประมาณการ แต่ Total cost ต้องอยู่ในช่วงงบประมาณที่กำหนด
     - กรุณาใส่ราคาเป็นตัวเลขเท่านั้น ไม่ต้องใส่สัญลักษณ์สกุลเงิน`;
 
     // Add special requirements if provided
@@ -401,6 +400,6 @@ export function getAIProvider(providerName: string, apiKey: string, model?: stri
 
 // Updated API keys for both providers
 export const defaultApiKeys = {
-  #openai: "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",
+  //openai: "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",
   gemini: "AIzaSyDGcREooKS1QaZeefR2zdE-eElbpyqN6Fc"
 };
