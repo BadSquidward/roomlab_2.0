@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
@@ -25,15 +24,16 @@ const DesignResult = ({ selectedFurniture }: DesignResultProps) => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingBOQ, setIsLoadingBOQ] = useState(false);
-  const [isBoqGenerated, setIsBoqGenerated] = useState(false);
+  // Change default value to true so furniture recommendations always show
+  const [isBoqGenerated, setIsBoqGenerated] = useState(true);
   const [regenerationComment, setRegenerationComment] = useState("");
   const [designData, setDesignData] = useState({
     ...sampleDesign,
-    caption: "", // Add caption field to track AI-generated text
-    furniture: sampleBOQ, // Initialize with sample furniture items
-    budget: "" // Initialize with empty budget
+    caption: "",
+    furniture: sampleBOQ,
+    budget: ""
   });
-  const [selectedProvider] = useState("openai"); // Default to OpenAI
+  const [selectedProvider] = useState("openai");
   
   // Handle the selected furniture from recommendations
   const [recommendedFurniture, setRecommendedFurniture] = useState(null);

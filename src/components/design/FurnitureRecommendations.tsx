@@ -618,7 +618,8 @@ const FurnitureRecommendations = ({
   // Generate furniture recommendations based on room type, style, and existing furniture
   useEffect(() => {
     const generateRecommendations = () => {
-      if (!isBoqGenerated) return;
+      // Remove the isBoqGenerated condition to ensure recommendations always appear
+      // if (!isBoqGenerated) return;
       
       setIsLoading(true);
       
@@ -674,7 +675,7 @@ const FurnitureRecommendations = ({
     };
     
     generateRecommendations();
-  }, [roomType, style, furnitureList, isBoqGenerated, budget]);
+  }, [roomType, style, furnitureList, budget]); // Remove isBoqGenerated from dependencies
 
   const handleSelectFurniture = (furniture: FurnitureItem) => {
     setSelectedFurniture(furniture);
@@ -685,9 +686,10 @@ const FurnitureRecommendations = ({
     onSelectFurniture(furniture);
   };
 
-  if (!isBoqGenerated) {
-    return null;
-  }
+  // Remove the isBoqGenerated condition check
+  // if (!isBoqGenerated) {
+  //   return null;
+  // }
 
   return (
     <div className="space-y-6">
