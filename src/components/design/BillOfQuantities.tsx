@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Phone, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { FurnitureItem } from "@/utils/aiProviders";
@@ -15,7 +15,7 @@ interface BillOfQuantitiesProps {
 
 const BillOfQuantities = ({ items, onNavigateToDesign, isLoading = false, budget }: BillOfQuantitiesProps) => {
   const { toast } = useToast();
-  const [isContacting, setIsContacting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Filter to include only furniture items (exclude decorative items, etc.)
   const furnitureItems = items.filter(item => {
@@ -47,19 +47,20 @@ const BillOfQuantities = ({ items, onNavigateToDesign, isLoading = false, budget
     return totalPrice <= upperLimit;
   };
   
-  // Handle contacting sales
-  const handleContactSales = async () => {
-    setIsContacting(true);
+  // Handle submitting BOQ
+  const handleSubmitBOQ = async () => {
+    setIsSubmitting(true);
     
-    // Simulate contact delay
+    // Simulate submission delay
     await new Promise((resolve) => setTimeout(resolve, 1500));
     
     toast({
-      title: "Sales Request Sent",
-      description: "Our sales team will contact you shortly regarding your design inquiry.",
+      title: "BOQ Submitted Successfully",
+      description: "Thank you for confirming your BOQ! Our team has received your design request and will be in touch with you shortly to assist further. We appreciate your trust in RoomLab — let's bring your dream space to life.",
+      duration: 6000,
     });
     
-    setIsContacting(false);
+    setIsSubmitting(false);
   };
   
   return (
@@ -67,13 +68,18 @@ const BillOfQuantities = ({ items, onNavigateToDesign, isLoading = false, budget
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-lg">Bill of Quantities</h3>
         <div className="flex space-x-2">
-          <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={handleContactSales} disabled={isContacting}>
-            {isContacting ? (
+          <Button 
+            variant="default" 
+            size="sm" 
+            className="h-8 text-xs" 
+            onClick={handleSubmitBOQ} 
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
               <Loader2 className="h-3 w-3 animate-spin mr-1" />
             ) : (
-              <Phone className="h-3 w-3 mr-1" />
+              "Submit BOQ"
             )}
-            Contact Sales
           </Button>
           <Button
             onClick={onNavigateToDesign}
