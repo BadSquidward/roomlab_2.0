@@ -73,7 +73,7 @@ const ContactUsPage = () => {
                   </div>
                   <div>
                     <h3 className="font-medium">Email</h3>
-                    <p className="text-sm text-muted-foreground">roomlab@gmail.com</p>
+                    <p className="text-sm text-muted-foreground">admin@roomlab.com</p>
                   </div>
                 </div>
                 
@@ -93,7 +93,7 @@ const ContactUsPage = () => {
                   </div>
                   <div>
                     <h3 className="font-medium">Phone</h3>
-                    <p className="text-sm text-muted-foreground">02-888-5552</p>
+                    <p className="text-sm text-muted-foreground">081-234-5678</p>
                   </div>
                 </div>
               </div>
