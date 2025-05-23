@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Star } from "lucide-react";
 
 interface FurnitureItem {
   id: string;
@@ -11,6 +11,9 @@ interface FurnitureItem {
   imageUrl: string;
   description: string;
   price: number;
+  dimensions?: string;
+  isTopSeller?: boolean;
+  rating?: number;
 }
 
 interface FurnitureRecommendationsProps {
@@ -19,7 +22,7 @@ interface FurnitureRecommendationsProps {
   furnitureList: string[];
   onSelectFurniture: (furniture: FurnitureItem) => void;
   isBoqGenerated: boolean;
-  budget?: string; // Add budget to filter recommendations by price
+  budget?: string;
 }
 
 const FurnitureRecommendations = ({ 
@@ -34,6 +37,190 @@ const FurnitureRecommendations = ({
   const [selectedFurniture, setSelectedFurniture] = useState<FurnitureItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [recommendations, setRecommendations] = useState<FurnitureItem[]>([]);
+
+  // IKEA furniture catalog data
+  const ikeaCatalog: FurnitureItem[] = [
+    // Coffee Tables
+    {
+      id: "holmerud-coffee-table",
+      name: "HOLMERUD Coffee Table",
+      imageUrl: "https://www.ikea.com/th/en/images/products/holmerud-coffee-table-oak-effect__1113125_pe871179_s5.jpg",
+      description: "Coffee table, oak effect, 90x55 cm",
+      dimensions: "90x55 cm",
+      price: 1290
+    },
+    {
+      id: "jattesta-coffee-table",
+      name: "JÄTTESTA Coffee Table",
+      imageUrl: "https://www.ikea.com/th/en/images/products/jaettesta-coffee-table-black__1109454_pe869713_s5.jpg",
+      description: "Coffee table, black, 80x80 cm",
+      dimensions: "80x80 cm",
+      price: 3590
+    },
+    {
+      id: "moxboda-coffee-table",
+      name: "MOXBODA Coffee Table",
+      imageUrl: "https://www.ikea.com/th/en/images/products/moxboda-coffee-table-foldable-brown__0959940_pe807593_s5.jpg",
+      description: "Coffee table, foldable/brown, 70 cm",
+      dimensions: "70 cm",
+      price: 1990,
+      rating: 4
+    },
+    {
+      id: "krokholmen-coffee-table",
+      name: "KROKHOLMEN Coffee Table",
+      imageUrl: "https://www.ikea.com/th/en/images/products/krokholmen-coffee-table-outdoor-beige__0736123_pe740373_s5.jpg",
+      description: "Coffee table, outdoor, beige, 73 cm",
+      dimensions: "73 cm",
+      price: 1990,
+      isTopSeller: true,
+      rating: 5
+    },
+    {
+      id: "vittsjo-nest-tables",
+      name: "VITTSJÖ Nest of Tables",
+      imageUrl: "https://www.ikea.com/th/en/images/products/vittsjo-nest-of-tables-set-of-2-black-brown-glass__0452609_pe601390_s5.jpg",
+      description: "Nest of tables, set of 2, black-brown/glass, 90x50 cm",
+      dimensions: "90x50 cm",
+      price: 1990
+    },
+    
+    // Side Tables
+    {
+      id: "kvistbro-storage-table",
+      name: "KVISTBRO Storage Table",
+      imageUrl: "https://www.ikea.com/th/en/images/products/kvistbro-storage-table-white__0276622_pe415559_s5.jpg",
+      description: "Storage table, white, 44 cm",
+      dimensions: "44 cm",
+      price: 790
+    },
+    {
+      id: "guttane-side-table",
+      name: "GUTTANË Side Table",
+      imageUrl: "https://www.ikea.com/th/en/images/products/guttane-side-table-oak-light-stained-oak__1168953_pe892157_s5.jpg",
+      description: "Side table, oak, 58x39 cm",
+      dimensions: "58x39 cm",
+      price: 3590,
+      isTopSeller: true
+    },
+    {
+      id: "jattesta-side-table",
+      name: "JÄTTESTA Side Table",
+      imageUrl: "https://www.ikea.com/th/en/images/products/jaettesta-side-table-black__1109453_pe869712_s5.jpg",
+      description: "Side table, black, 95x30 cm",
+      dimensions: "95x30 cm",
+      price: 2990
+    },
+    {
+      id: "gladom-tray-table",
+      name: "GLADOM Tray Table",
+      imageUrl: "https://www.ikea.com/th/en/images/products/gladom-tray-table-dark-grey-beige__0997173_pe822569_s5.jpg",
+      description: "Tray table, dark grey-beige, 45x53 cm",
+      dimensions: "45x53 cm",
+      price: 499,
+      isTopSeller: true,
+      rating: 5
+    },
+    {
+      id: "lack-coffee-table-white",
+      name: "LACK Coffee Table",
+      imageUrl: "https://www.ikea.com/th/en/images/products/lack-coffee-table-white__0702219_pe724342_s5.jpg",
+      description: "Coffee table, white, 90x55 cm",
+      dimensions: "90x55 cm",
+      price: 790,
+      isTopSeller: true,
+      rating: 5
+    },
+    
+    // Bedside Tables
+    {
+      id: "gräfjället-bedside-table",
+      name: "GRÄFJÄLLET Bedside Table",
+      imageUrl: "https://www.ikea.com/th/en/images/products/graefjaellet-bedside-table-anthracite__1061361_pe849936_s5.jpg",
+      description: "Bedside table, anthracite, 45x36x59 cm",
+      dimensions: "45x36x59 cm",
+      price: 1790
+    },
+    {
+      id: "tonstad-bedside-table",
+      name: "TONSTAD Bedside Table",
+      imageUrl: "https://www.ikea.com/th/en/images/products/tonstad-bedside-table-off-white__1186615_pe899852_s5.jpg",
+      description: "Bedside table, off-white, 40x40x59 cm",
+      dimensions: "40x40x59 cm",
+      price: 2990
+    },
+    {
+      id: "vikhammer-bedside-table",
+      name: "VIKHAMMER Bedside Table",
+      imageUrl: "https://www.ikea.com/th/en/images/products/vikhammer-bedside-table-white__0640723_pe699998_s5.jpg",
+      description: "Bedside table, white, 40x39 cm",
+      dimensions: "40x39 cm",
+      price: 2490
+    },
+    {
+      id: "vihals-bedside-table",
+      name: "VIHALS Bedside Table",
+      imageUrl: "https://www.ikea.com/th/en/images/products/vihals-bedside-table-white__1127587_pe876457_s5.jpg",
+      description: "Bedside table, white, 37x37 cm",
+      dimensions: "37x37 cm",
+      price: 990,
+      rating: 5
+    },
+    {
+      id: "hattasen-bedside-table",
+      name: "HATTÅSEN Bedside Table/Shelf Unit",
+      imageUrl: "https://www.ikea.com/th/en/images/products/hattsen-bedside-table-shelf-unit-black__0955642_pe804123_s5.jpg",
+      description: "Bedside table/shelf unit, black",
+      dimensions: "Various",
+      price: 790
+    },
+    
+    // Armchairs
+    {
+      id: "poang-armchair",
+      name: "POÄNG Armchair",
+      imageUrl: "https://www.ikea.com/th/en/images/products/poaeng-armchair-birch-veneer-knisa-light-beige__0472285_pe613982_s5.jpg",
+      description: "Armchair and footstool, birch veneer/Knisa light beige",
+      dimensions: "Standard",
+      price: 4380,
+      rating: 4
+    },
+    {
+      id: "strandmon-armchair",
+      name: "STRANDMON Armchair",
+      imageUrl: "https://www.ikea.com/th/en/images/products/strandmon-armchair-nordvalla-dark-grey__0601768_pe680181_s5.jpg",
+      description: "Armchair and footstool, Nordvalla dark grey",
+      dimensions: "Standard",
+      price: 8480,
+      isTopSeller: true,
+      rating: 5
+    },
+    {
+      id: "sotenas-armchair",
+      name: "SOTENÄS Armchair",
+      imageUrl: "https://www.ikea.com/th/en/images/products/sotenas-armchair-hakebo-red__1137845_pe879968_s5.jpg",
+      description: "Armchair, Hakebo red",
+      dimensions: "Standard",
+      price: 6990
+    },
+    {
+      id: "ektorp-armchair",
+      name: "EKTORP Armchair",
+      imageUrl: "https://www.ikea.com/th/en/images/products/ektorp-armchair-hallarp-beige__1053461_pe846938_s5.jpg",
+      description: "Armchair, Kilanda light beige",
+      dimensions: "Standard",
+      price: 6990,
+      rating: 3
+    },
+    {
+      id: "landskrona-armchair",
+      name: "LANDSKRONA Armchair",
+      imageUrl: "https://www.ikea.com/th/en/images/products/landskrona-armchair-gunnared-dark-grey-wood__0602085_pe680154_s5.jpg",
+      description: "Armchair, Gunnared dark grey/wood",
+      dimensions: "Standard",
+      price: 10990
+    }
+  ];
 
   // Get budget range for filtering
   const getBudgetRange = () => {
@@ -56,79 +243,53 @@ const FurnitureRecommendations = ({
       
       setIsLoading(true);
       
-      // In a real application, this would be an API call to get recommendations
-      // Here we're generating mock data based on the room type and style with images from nocnoc.com
+      // Simulate API delay
       setTimeout(() => {
-        const mockRecommendations: FurnitureItem[] = [
-          {
-            id: "1",
-            name: `${style} Coffee Table`,
-            imageUrl: "https://www.nocnoc.com/static/version1715746264/frontend/Nocnoc/base/th_TH/images/category/c-furniture/c-tables-desks/c-coffee-table.jpg",
-            description: `Elegant ${style.toLowerCase()} coffee table, perfect for your ${roomType.replace('-', ' ')}`,
-            price: 15990
-          },
-          {
-            id: "2",
-            name: `${style} Side Table`,
-            imageUrl: "https://www.nocnoc.com/static/version1715746264/frontend/Nocnoc/base/th_TH/images/category/c-furniture/c-tables-desks/c-side-table.jpg",
-            description: `Stylish ${style.toLowerCase()} side table to complement your space`,
-            price: 8990
-          },
-          {
-            id: "3",
-            name: `${style} Floor Lamp`,
-            imageUrl: "https://www.nocnoc.com/static/version1715746264/frontend/Nocnoc/base/th_TH/images/category/c-lighting/c-floor-lamps.jpg",
-            description: `Beautiful ${style.toLowerCase()} floor lamp to illuminate your space`,
-            price: 5990
-          },
-          {
-            id: "4",
-            name: `${style} Wall Art`,
-            imageUrl: "https://www.nocnoc.com/static/version1715746264/frontend/Nocnoc/base/th_TH/images/category/c-home-decor/c-wall-decor/c-wall-art-frames.jpg",
-            description: `Beautiful ${style.toLowerCase()} wall art to enhance your ${roomType.replace('-', ' ')}`,
-            price: 5990
-          },
-          {
-            id: "5",
-            name: `${style} Decorative Plant`,
-            imageUrl: "https://www.nocnoc.com/static/version1715746264/frontend/Nocnoc/base/th_TH/images/category/c-home-decor/c-artificial-plants-flowers/c-artificial-plants.jpg",
-            description: `Stylish ${style.toLowerCase()} plant to add life to your space`,
-            price: 2990
-          }
-        ];
-        
-        // Additional bedroom-specific items
-        if (roomType === 'bedroom') {
-          mockRecommendations.push(
-            {
-              id: "6",
-              name: `${style} Bedside Table`,
-              imageUrl: "https://www.nocnoc.com/static/version1715746264/frontend/Nocnoc/base/th_TH/images/category/c-furniture/c-tables-desks/c-bedside-table.jpg",
-              description: `Beautiful ${style.toLowerCase()} bedside table for your bedroom`,
-              price: 7990
-            },
-            {
-              id: "7",
-              name: `${style} Wardrobe`,
-              imageUrl: "https://www.nocnoc.com/static/version1715746264/frontend/Nocnoc/base/th_TH/images/category/c-furniture/c-wardrobe-storage/c-wardrobe.jpg",
-              description: `Spacious ${style.toLowerCase()} wardrobe with plenty of storage`,
-              price: 29990
-            }
-          );
-        }
-        
-        // Filter recommendations based on budget if provided
         const { min, max } = getBudgetRange();
-        let filteredRecommendations = mockRecommendations.filter(item => 
+        
+        // Filter catalog items based on budget constraints
+        let filteredItems = ikeaCatalog.filter(item => 
           item.price >= min && item.price <= max
         );
         
-        // Limit to 5 items
-        filteredRecommendations = filteredRecommendations.slice(0, 5);
+        // Filter by furniture type based on room
+        if (roomType === 'bedroom') {
+          filteredItems = filteredItems.filter(item => 
+            item.name.toLowerCase().includes('bedside') || 
+            item.name.toLowerCase().includes('table') ||
+            item.name.toLowerCase().includes('armchair')
+          );
+        } else if (roomType === 'living-room') {
+          filteredItems = filteredItems.filter(item => 
+            item.name.toLowerCase().includes('coffee') || 
+            item.name.toLowerCase().includes('side') ||
+            item.name.toLowerCase().includes('armchair') ||
+            item.name.toLowerCase().includes('nest')
+          );
+        }
         
-        setRecommendations(filteredRecommendations);
+        // Prioritize items that match the style preference
+        filteredItems.sort((a, b) => {
+          const aMatchesStyle = a.description.toLowerCase().includes(style.toLowerCase());
+          const bMatchesStyle = b.description.toLowerCase().includes(style.toLowerCase());
+          
+          if (aMatchesStyle && !bMatchesStyle) return -1;
+          if (!aMatchesStyle && bMatchesStyle) return 1;
+          
+          // If both match or don't match style, prioritize top sellers
+          if (a.isTopSeller && !b.isTopSeller) return -1;
+          if (!a.isTopSeller && b.isTopSeller) return 1;
+          
+          // Finally sort by price (lower first)
+          return a.price - b.price;
+        });
+        
+        // Limit to 5 items
+        const finalRecommendations = filteredItems.slice(0, 5);
+        
+        setRecommendations(finalRecommendations);
         setIsLoading(false);
-      }, 1500);
+      }, 1000);
     };
     
     generateRecommendations();
@@ -151,7 +312,7 @@ const FurnitureRecommendations = ({
     <div className="space-y-6">
       <div>
         <h3 className="text-xl font-semibold">Furniture Recommendations</h3>
-        <p className="text-muted-foreground">Based on your design preferences and budget</p>
+        <p className="text-muted-foreground">IKEA furniture that matches your design style and budget</p>
       </div>
       
       {isLoading ? (
@@ -168,6 +329,11 @@ const FurnitureRecommendations = ({
               <Card key={furniture.id} className={`overflow-hidden transition-all ${selectedFurniture?.id === furniture.id ? 'ring-2 ring-brand-500' : ''}`}>
                 <div className="flex flex-row h-28">
                   <div className="w-28 h-28 relative overflow-hidden">
+                    {furniture.isTopSeller && (
+                      <div className="absolute top-0 left-0 bg-red-500 text-white text-xs px-1 py-0.5 z-10">
+                        Top seller
+                      </div>
+                    )}
                     <img 
                       src={furniture.imageUrl} 
                       alt={furniture.name}
@@ -176,8 +342,20 @@ const FurnitureRecommendations = ({
                   </div>
                   <CardContent className="flex-1 p-3 flex flex-col justify-between">
                     <div>
-                      <h4 className="font-medium line-clamp-1">{furniture.name}</h4>
-                      <p className="text-xs text-muted-foreground line-clamp-2">{furniture.description}</p>
+                      <div className="flex justify-between items-start">
+                        <h4 className="font-medium line-clamp-1">{furniture.name}</h4>
+                        {furniture.rating && (
+                          <div className="flex items-center">
+                            {[...Array(5)].map((_, i) => (
+                              <Star 
+                                key={i}
+                                className={`h-3 w-3 ${i < furniture.rating! ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{furniture.description}</p>
                     </div>
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-sm font-medium">฿{furniture.price.toLocaleString()}</span>
