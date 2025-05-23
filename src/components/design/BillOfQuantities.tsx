@@ -10,15 +10,30 @@ interface BillOfQuantitiesProps {
   items: FurnitureItem[];
   onNavigateToDesign: () => void;
   isLoading?: boolean;
-  budget?: string; // Add budget parameter to handle budget constraints
+  budget?: string;
 }
 
 const BillOfQuantities = ({ items, onNavigateToDesign, isLoading = false, budget }: BillOfQuantitiesProps) => {
   const { toast } = useToast();
   const [isContacting, setIsContacting] = useState(false);
   
-  // Calculate total price
-  const totalPrice = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  // Filter to include only furniture items (exclude decorative items, etc.)
+  const furnitureItems = items.filter(item => {
+    const lowerName = item.name.toLowerCase();
+    return (
+      lowerName.includes('table') || 
+      lowerName.includes('chair') || 
+      lowerName.includes('sofa') || 
+      lowerName.includes('desk') || 
+      lowerName.includes('bed') ||
+      lowerName.includes('shelf') ||
+      lowerName.includes('cabinet') ||
+      lowerName.includes('wardrobe')
+    );
+  });
+  
+  // Calculate total price from filtered furniture items only
+  const totalPrice = furnitureItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   
   // Check if total is within budget
   const isWithinBudget = () => {
@@ -75,10 +90,10 @@ const BillOfQuantities = ({ items, onNavigateToDesign, isLoading = false, budget
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50 hover:bg-gray-50">
-              <TableHead className="w-[40%] h-8 py-2 text-xs">Item</TableHead>
-              <TableHead className="w-[30%] h-8 py-2 text-xs">Dimensions</TableHead>
-              <TableHead className="w-[10%] h-8 py-2 text-xs">Qty</TableHead>
-              <TableHead className="w-[20%] h-8 py-2 text-xs text-right">Price</TableHead>
+              <TableHead className="w-[40%] h-8 py-2 text-xs font-semibold">Item</TableHead>
+              <TableHead className="w-[30%] h-8 py-2 text-xs font-semibold">Dimensions</TableHead>
+              <TableHead className="w-[10%] h-8 py-2 text-xs font-semibold text-center">QTY</TableHead>
+              <TableHead className="w-[20%] h-8 py-2 text-xs font-semibold text-right">Price</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody className="max-h-[400px] overflow-y-auto design-scrollbar">
@@ -91,12 +106,12 @@ const BillOfQuantities = ({ items, onNavigateToDesign, isLoading = false, budget
                   </div>
                 </TableCell>
               </TableRow>
-            ) : items.length > 0 ? (
-              items.map((item, index) => (
+            ) : furnitureItems.length > 0 ? (
+              furnitureItems.map((item, index) => (
                 <TableRow key={index}>
-                  <TableCell className="py-2 text-sm">{item.name}</TableCell>
+                  <TableCell className="py-2 text-sm font-medium">{item.name}</TableCell>
                   <TableCell className="py-2 text-xs text-muted-foreground">{item.dimensions}</TableCell>
-                  <TableCell className="py-2 text-sm">{item.quantity}</TableCell>
+                  <TableCell className="py-2 text-sm text-center">{item.quantity}</TableCell>
                   <TableCell className="py-2 text-sm text-right">฿{item.price.toLocaleString()}</TableCell>
                 </TableRow>
               ))
