@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
@@ -485,26 +486,27 @@ const DesignResult = ({ selectedFurniture }: DesignResultProps) => {
           />
         </div>
         
-        {/* Bill of Quantities (BOQ) Section */}
-        <div>
+        {/* Right Column - Bill of Quantities and Furniture Recommendations */}
+        <div className="space-y-8">
+          {/* Bill of Quantities (BOQ) Section */}
           <BillOfQuantities 
             items={designData.furniture || sampleBOQ}
             onNavigateToDesign={handleNavigateToDesign}
             isLoading={isLoadingBOQ}
             budget={designData.budget}
           />
+          
+          {/* Furniture Recommendations Section - Now positioned below BOQ */}
+          <FurnitureRecommendations
+            roomType={designData.roomType}
+            style={designData.style}
+            furnitureList={getFurnitureNames()}
+            onSelectFurniture={handleSelectFurniture}
+            isBoqGenerated={isBoqGenerated}
+            budget={designData.budget}
+          />
         </div>
       </div>
-      
-      {/* Furniture Recommendations Section */}
-      <FurnitureRecommendations
-        roomType={designData.roomType}
-        style={designData.style}
-        furnitureList={getFurnitureNames()}
-        onSelectFurniture={handleSelectFurniture}
-        isBoqGenerated={isBoqGenerated}
-        budget={designData.budget}
-      />
     </div>
   );
 };

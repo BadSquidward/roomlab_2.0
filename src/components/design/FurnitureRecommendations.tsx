@@ -97,11 +97,34 @@ const FurnitureRecommendations = ({
           }
         ];
         
+        // Additional bedroom-specific items
+        if (roomType === 'bedroom') {
+          mockRecommendations.push(
+            {
+              id: "6",
+              name: `${style} Bedside Table`,
+              imageUrl: "https://www.nocnoc.com/static/version1715746264/frontend/Nocnoc/base/th_TH/images/category/c-furniture/c-tables-desks/c-bedside-table.jpg",
+              description: `Beautiful ${style.toLowerCase()} bedside table for your bedroom`,
+              price: 7990
+            },
+            {
+              id: "7",
+              name: `${style} Wardrobe`,
+              imageUrl: "https://www.nocnoc.com/static/version1715746264/frontend/Nocnoc/base/th_TH/images/category/c-furniture/c-wardrobe-storage/c-wardrobe.jpg",
+              description: `Spacious ${style.toLowerCase()} wardrobe with plenty of storage`,
+              price: 29990
+            }
+          );
+        }
+        
         // Filter recommendations based on budget if provided
         const { min, max } = getBudgetRange();
-        const filteredRecommendations = mockRecommendations.filter(item => 
+        let filteredRecommendations = mockRecommendations.filter(item => 
           item.price >= min && item.price <= max
         );
+        
+        // Limit to 5 items
+        filteredRecommendations = filteredRecommendations.slice(0, 5);
         
         setRecommendations(filteredRecommendations);
         setIsLoading(false);
@@ -125,7 +148,7 @@ const FurnitureRecommendations = ({
   }
 
   return (
-    <div className="mt-8 space-y-6">
+    <div className="space-y-6">
       <div>
         <h3 className="text-xl font-semibold">Furniture Recommendations</h3>
         <p className="text-muted-foreground">Based on your design preferences and budget</p>
@@ -139,42 +162,46 @@ const FurnitureRecommendations = ({
           </div>
         </div>
       ) : recommendations.length > 0 ? (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-4">
             {recommendations.map((furniture) => (
               <Card key={furniture.id} className={`overflow-hidden transition-all ${selectedFurniture?.id === furniture.id ? 'ring-2 ring-brand-500' : ''}`}>
-                <div className="aspect-square relative overflow-hidden">
-                  <img 
-                    src={furniture.imageUrl} 
-                    alt={furniture.name}
-                    className="w-full h-full object-cover transition-transform hover:scale-105"
-                  />
-                </div>
-                <CardContent className="p-4 space-y-2">
-                  <h4 className="font-medium line-clamp-1">{furniture.name}</h4>
-                  <p className="text-sm text-muted-foreground line-clamp-2">{furniture.description}</p>
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="font-medium">฿{furniture.price.toLocaleString()}</span>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleSelectFurniture(furniture)}
-                      className={selectedFurniture?.id === furniture.id ? 'bg-brand-500 text-white hover:bg-brand-600' : ''}
-                    >
-                      {selectedFurniture?.id === furniture.id ? 'Selected' : 'Select'}
-                    </Button>
+                <div className="flex flex-row h-28">
+                  <div className="w-28 h-28 relative overflow-hidden">
+                    <img 
+                      src={furniture.imageUrl} 
+                      alt={furniture.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                </CardContent>
+                  <CardContent className="flex-1 p-3 flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-medium line-clamp-1">{furniture.name}</h4>
+                      <p className="text-xs text-muted-foreground line-clamp-2">{furniture.description}</p>
+                    </div>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-sm font-medium">฿{furniture.price.toLocaleString()}</span>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleSelectFurniture(furniture)}
+                        className={selectedFurniture?.id === furniture.id ? 'bg-brand-500 text-white hover:bg-brand-600' : ''}
+                      >
+                        {selectedFurniture?.id === furniture.id ? 'Selected' : 'Select'}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </div>
               </Card>
             ))}
           </div>
           
           {selectedFurniture && (
-            <div className="bg-muted p-4 rounded-md mt-4 text-center">
+            <div className="bg-muted p-4 rounded-md text-center text-sm">
               <p>If you want the {selectedFurniture.name} in your design, please click 'Regenerate Design'</p>
             </div>
           )}
-        </>
+        </div>
       ) : (
         <div className="bg-muted rounded-md p-4 text-center">
           <p className="text-muted-foreground">No recommendations available within your selected budget range. Consider adjusting your budget or contact our sales team.</p>
