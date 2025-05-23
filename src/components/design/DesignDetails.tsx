@@ -6,9 +6,10 @@ interface DesignDetailsProps {
   style: string;
   colorScheme: string;
   dimensions: string;
+  budget?: string; // Make budget optional for backward compatibility
 }
 
-const DesignDetails = ({ roomType, style, colorScheme, dimensions }: DesignDetailsProps) => {
+const DesignDetails = ({ roomType, style, colorScheme, dimensions, budget }: DesignDetailsProps) => {
   return (
     <Card className="p-4">
       <h3 className="font-semibold mb-2">Design Details</h3>
@@ -29,6 +30,12 @@ const DesignDetails = ({ roomType, style, colorScheme, dimensions }: DesignDetai
           <span className="text-muted-foreground">Dimensions:</span>
           <p>{dimensions}</p>
         </div>
+        {budget && (
+          <div className="col-span-2">
+            <span className="text-muted-foreground">Budget Range:</span>
+            <p>{budget}</p>
+          </div>
+        )}
       </div>
     </Card>
   );

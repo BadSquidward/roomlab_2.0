@@ -10,14 +10,27 @@ interface BillOfQuantitiesProps {
   items: FurnitureItem[];
   onNavigateToDesign: () => void;
   isLoading?: boolean;
+  budget?: string; // Add budget parameter to handle budget constraints
 }
 
-const BillOfQuantities = ({ items, onNavigateToDesign, isLoading = false }: BillOfQuantitiesProps) => {
+const BillOfQuantities = ({ items, onNavigateToDesign, isLoading = false, budget }: BillOfQuantitiesProps) => {
   const { toast } = useToast();
   const [isContacting, setIsContacting] = useState(false);
   
   // Calculate total price
   const totalPrice = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  
+  // Check if total is within budget
+  const isWithinBudget = () => {
+    if (!budget) return true;
+    
+    // Extract the upper limit from budget range (format: "฿X - ฿Y")
+    const upperLimitMatch = budget.match(/฿([\d,]+) - ฿([\d,]+)/);
+    if (!upperLimitMatch) return true;
+    
+    const upperLimit = parseInt(upperLimitMatch[2].replace(/,/g, ''), 10);
+    return totalPrice <= upperLimit;
+  };
   
   // Handle contacting sales
   const handleContactSales = async () => {
@@ -101,6 +114,19 @@ const BillOfQuantities = ({ items, onNavigateToDesign, isLoading = false }: Bill
           <div className="col-span-10">Total Estimated Cost</div>
           <div className="col-span-2 text-right">฿{totalPrice.toLocaleString()}</div>
         </div>
+        
+        {budget && !isWithinBudget() && (
+          <div className="bg-amber-50 p-3 border-t text-sm text-amber-700">
+            <div className="flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <span>Total exceeds your budget range. Consider removing some items or contact our sales team for custom options.</span>
+            </div>
+          </div>
+        )}
       </div>
       
       <div className="text-xs text-muted-foreground">

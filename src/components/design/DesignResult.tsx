@@ -29,7 +29,8 @@ const DesignResult = ({ selectedFurniture }: DesignResultProps) => {
   const [designData, setDesignData] = useState({
     ...sampleDesign,
     caption: "", // Add caption field to track AI-generated text
-    furniture: sampleBOQ // Initialize with sample furniture items
+    furniture: sampleBOQ, // Initialize with sample furniture items
+    budget: "" // Initialize with empty budget
   });
   const [selectedProvider] = useState("openai"); // Default to OpenAI
   
@@ -108,7 +109,10 @@ const DesignResult = ({ selectedFurniture }: DesignResultProps) => {
       const result = await generateDesignWithAI(false, "openai", request);
       
       if (result) {
-        // Create new design data object with temporary furniture items
+        // Get budget text from form data
+        const budgetText = getBudgetText(formData.budget || 50);
+        
+        // Create new design data object with temporary furniture items and budget
         const newDesignData = {
           imageUrl: result.imageUrl,
           roomType: formData.roomType || "living-room",
@@ -116,7 +120,8 @@ const DesignResult = ({ selectedFurniture }: DesignResultProps) => {
           colorScheme: formData.colorScheme || "Neutral",
           dimensions: `${formData.length || "4"}m × ${formData.width || "3"}m × ${formData.height || "2.5"}m`,
           caption: result.caption || "", // Store caption in design data
-          furniture: result.furniture || [] // Store temporary furniture items in design data
+          furniture: result.furniture || [], // Store temporary furniture items in design data
+          budget: budgetText // Store budget in design data
         };
         
         // Update state and localStorage
@@ -315,7 +320,7 @@ const DesignResult = ({ selectedFurniture }: DesignResultProps) => {
           width: dimensions[1] || "3",
           height: dimensions[2] || "2.5"
         },
-        budget: getBudgetText(50), // Default mid-range budget
+        budget: designData.budget || getBudgetText(50), // Use stored budget or default
         furniture: designData.furniture.map(item => item.name.split(' ').slice(1).join(' ')), // Extract furniture names
         specialRequirements: "",
         regenerationComment: regenerationComment
@@ -330,7 +335,7 @@ const DesignResult = ({ selectedFurniture }: DesignResultProps) => {
       const result = await generateDesignWithAI(true, "openai", request);
       
       if (result) {
-        // Update design with new image and temporary furniture items
+        // Update design with new image and temporary furniture items, keeping budget
         const updatedDesignData = {
           ...designData,
           imageUrl: result.imageUrl,
@@ -476,6 +481,7 @@ const DesignResult = ({ selectedFurniture }: DesignResultProps) => {
             style={designData.style}
             colorScheme={designData.colorScheme}
             dimensions={designData.dimensions}
+            budget={designData.budget}
           />
         </div>
         
@@ -485,6 +491,7 @@ const DesignResult = ({ selectedFurniture }: DesignResultProps) => {
             items={designData.furniture || sampleBOQ}
             onNavigateToDesign={handleNavigateToDesign}
             isLoading={isLoadingBOQ}
+            budget={designData.budget}
           />
         </div>
       </div>
@@ -496,6 +503,7 @@ const DesignResult = ({ selectedFurniture }: DesignResultProps) => {
         furnitureList={getFurnitureNames()}
         onSelectFurniture={handleSelectFurniture}
         isBoqGenerated={isBoqGenerated}
+        budget={designData.budget}
       />
     </div>
   );

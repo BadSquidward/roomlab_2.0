@@ -19,6 +19,7 @@ interface FurnitureRecommendationsProps {
   furnitureList: string[];
   onSelectFurniture: (furniture: FurnitureItem) => void;
   isBoqGenerated: boolean;
+  budget?: string; // Add budget to filter recommendations by price
 }
 
 const FurnitureRecommendations = ({ 
@@ -26,12 +27,27 @@ const FurnitureRecommendations = ({
   style, 
   furnitureList, 
   onSelectFurniture,
-  isBoqGenerated
+  isBoqGenerated,
+  budget
 }: FurnitureRecommendationsProps) => {
   const { toast } = useToast();
   const [selectedFurniture, setSelectedFurniture] = useState<FurnitureItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [recommendations, setRecommendations] = useState<FurnitureItem[]>([]);
+
+  // Get budget range for filtering
+  const getBudgetRange = () => {
+    if (!budget) return { min: 0, max: Infinity };
+    
+    // Extract the range from budget string (format: "฿X - ฿Y")
+    const match = budget.match(/฿([\d,]+) - ฿([\d,]+)/);
+    if (!match) return { min: 0, max: Infinity };
+    
+    const min = parseInt(match[1].replace(/,/g, ''), 10);
+    const max = parseInt(match[2].replace(/,/g, ''), 10);
+    
+    return { min, max };
+  };
 
   // Generate furniture recommendations based on room type, style, and existing furniture
   useEffect(() => {
@@ -81,13 +97,19 @@ const FurnitureRecommendations = ({
           }
         ];
         
-        setRecommendations(mockRecommendations);
+        // Filter recommendations based on budget if provided
+        const { min, max } = getBudgetRange();
+        const filteredRecommendations = mockRecommendations.filter(item => 
+          item.price >= min && item.price <= max
+        );
+        
+        setRecommendations(filteredRecommendations);
         setIsLoading(false);
       }, 1500);
     };
     
     generateRecommendations();
-  }, [roomType, style, furnitureList, isBoqGenerated]);
+  }, [roomType, style, furnitureList, isBoqGenerated, budget]);
 
   const handleSelectFurniture = (furniture: FurnitureItem) => {
     setSelectedFurniture(furniture);
@@ -106,7 +128,7 @@ const FurnitureRecommendations = ({
     <div className="mt-8 space-y-6">
       <div>
         <h3 className="text-xl font-semibold">Furniture Recommendations</h3>
-        <p className="text-muted-foreground">Based on your design preferences and selections</p>
+        <p className="text-muted-foreground">Based on your design preferences and budget</p>
       </div>
       
       {isLoading ? (
@@ -116,7 +138,7 @@ const FurnitureRecommendations = ({
             <p className="text-sm text-muted-foreground">Finding perfect furniture matches...</p>
           </div>
         </div>
-      ) : (
+      ) : recommendations.length > 0 ? (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             {recommendations.map((furniture) => (
@@ -153,6 +175,10 @@ const FurnitureRecommendations = ({
             </div>
           )}
         </>
+      ) : (
+        <div className="bg-muted rounded-md p-4 text-center">
+          <p className="text-muted-foreground">No recommendations available within your selected budget range. Consider adjusting your budget or contact our sales team.</p>
+        </div>
       )}
     </div>
   );
