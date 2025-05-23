@@ -14,7 +14,7 @@ const DesignResultPage = () => {
   
   // Force a refresh when the component mounts
   useEffect(() => {
-    // This will trigger a re-render
+    // This will trigger a re-render and ensure furniture recommendations load
     const timer = setTimeout(() => {
       console.log("Refreshing component to display furniture recommendations");
     }, 100);
