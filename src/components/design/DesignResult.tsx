@@ -17,9 +17,10 @@ interface DesignResultProps {
     description: string;
     price: number;
   } | null;
+  onFurnitureSelected?: (furniture: any) => void;
 }
 
-const DesignResult = ({ selectedFurniture }: DesignResultProps) => {
+const DesignResult = ({ selectedFurniture, onFurnitureSelected }: DesignResultProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -413,6 +414,10 @@ const DesignResult = ({ selectedFurniture }: DesignResultProps) => {
   // Handle selecting a furniture from recommendations
   const handleSelectFurniture = (furniture) => {
     setRecommendedFurniture(furniture);
+    // If onFurnitureSelected prop exists, call it
+    if (onFurnitureSelected) {
+      onFurnitureSelected(furniture);
+    }
   };
   
   // Extract furniture names from BOQ for recommendations
@@ -496,7 +501,7 @@ const DesignResult = ({ selectedFurniture }: DesignResultProps) => {
             budget={designData.budget}
           />
           
-          {/* Furniture Recommendations Section - Now positioned below BOQ */}
+          {/* Furniture Recommendations Section */}
           <FurnitureRecommendations
             roomType={designData.roomType}
             style={designData.style}
