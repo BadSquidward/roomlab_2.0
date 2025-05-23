@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
@@ -7,9 +6,20 @@ import BillOfQuantities from "./BillOfQuantities";
 import DesignDetails from "./DesignDetails";
 import RegenerationComments from "./RegenerationComments";
 import DesignActions from "./DesignActions";
+import FurnitureRecommendations from "./FurnitureRecommendations";
 import { getBudgetText, sampleBOQ, sampleDesign } from "@/utils/designUtils";
 
-const DesignResult = () => {
+interface DesignResultProps {
+  selectedFurniture?: {
+    id: string;
+    name: string;
+    imageUrl: string;
+    description: string;
+    price: number;
+  } | null;
+}
+
+const DesignResult = ({ selectedFurniture }: DesignResultProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -21,6 +31,9 @@ const DesignResult = () => {
     furniture: sampleBOQ // Initialize with sample furniture items
   });
   const [selectedProvider] = useState("openai"); // Default to OpenAI
+  
+  // Handle the selected furniture from recommendations
+  const [recommendedFurniture, setRecommendedFurniture] = useState(null);
   
   // Load data from localStorage
   useEffect(() => {
@@ -45,6 +58,15 @@ const DesignResult = () => {
       }
     }
   }, []);
+  
+  // Update regeneration comment when furniture is selected
+  useEffect(() => {
+    if (recommendedFurniture) {
+      setRegenerationComment(prev => 
+        `Please include the ${recommendedFurniture.name} in this design. ${prev ? prev : ""}`
+      );
+    }
+  }, [recommendedFurniture]);
   
   // Generate initial design using form data
   const generateInitialDesign = async (formData: any) => {
@@ -295,6 +317,11 @@ const DesignResult = () => {
         regenerationComment: regenerationComment
       };
       
+      // If we have a recommended furniture, add it to the regeneration comment
+      if (recommendedFurniture) {
+        request.regenerationComment = `Please include the ${recommendedFurniture.name} in this design. ${regenerationComment || ""}`;
+      }
+      
       // Generate new design with OpenAI
       const result = await generateDesignWithAI(true, "openai", request);
       
@@ -341,6 +368,9 @@ const DesignResult = () => {
         // Reset the regeneration comment
         setRegenerationComment("");
 
+        // Reset recommended furniture after regeneration
+        setRecommendedFurniture(null);
+
         // Clear localStorage data to allow for new design generation
         localStorage.removeItem('designFormData');
       }
@@ -366,6 +396,23 @@ const DesignResult = () => {
   const handleNavigateToDesign = () => {
     clearDesignSession();
     navigate("/design-generation");
+  };
+  
+  // Handle selecting a furniture from recommendations
+  const handleSelectFurniture = (furniture) => {
+    setRecommendedFurniture(furniture);
+  };
+  
+  // Extract furniture names from BOQ for recommendations
+  const getFurnitureNames = () => {
+    if (!designData.furniture || designData.furniture.length === 0) {
+      return ["Sofa", "Table", "Chair"];
+    }
+    
+    return designData.furniture.map(item => {
+      const nameParts = item.name.split(" ");
+      return nameParts.length > 1 ? nameParts.slice(1).join(" ") : item.name;
+    });
   };
   
   return (
@@ -448,6 +495,14 @@ const DesignResult = () => {
           Create New Design
         </button>
       </div>
+      
+      {/* Furniture Recommendations Section */}
+      <FurnitureRecommendations
+        roomType={designData.roomType}
+        style={designData.style}
+        furnitureList={getFurnitureNames()}
+        onSelectFurniture={handleSelectFurniture}
+      />
     </div>
   );
 };
