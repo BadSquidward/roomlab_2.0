@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -32,7 +32,7 @@ const FurnitureRecommendations = ({
   const [recommendations, setRecommendations] = useState<FurnitureItem[]>([]);
 
   // Generate furniture recommendations based on room type, style, and existing furniture
-  useState(() => {
+  useEffect(() => {
     const generateRecommendations = () => {
       setIsLoading(true);
       
