@@ -400,6 +400,6 @@ export function getAIProvider(providerName: string, apiKey: string, model?: stri
 
 // Updated API keys for both providers
 export const defaultApiKeys = {
-  //openai: "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",
+  openai: "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",
   gemini: "AIzaSyDGcREooKS1QaZeefR2zdE-eElbpyqN6Fc"
 };
