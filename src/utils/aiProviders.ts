@@ -76,7 +76,7 @@ export abstract class AIProvider {
 
   // Separate method for formatting BOQ prompt for Gemini
   protected formatBOQPrompt(request: DesignGenerationRequest): string {
-    let prompt = `สร้าง BOQ สำหรับเฟอร์นิเจอร์เท่านั้น (ไม่รวมของตกแต่งหรืออุปกรณ์อื่นๆ) จากคำขอออกแบบข้างต้นในรูปแบบตารางที่มีหัวข้อ Item, Dimensions, Qty และ ราคา เท่านั้น
+    let prompt = `สร้าง BOQ สำหรับเฟอร์นิเจอร์เท่านั้น (ไม่รวมของตกแต่งหรืออุปกรณ์อื่นๆ) จากคำขอออกแบบข้างต้นในรูปแบบตารางที่มีหัวข้อ Item, Dimensions, Qty และ Price เท่านั้น
     
     กรุณาให้รายการเฉพาะเฟอร์นิเจอร์จากแคตตาล็อก IKEA เท่านั้น และกำหนดราคาให้สมเหตุสมผลตามมาตรฐานราคา IKEA ในประเทศไทย
     
@@ -92,7 +92,7 @@ export abstract class AIProvider {
     หมายเหตุสำคัญ:
     - Item เป็นชื่อ Product และชื่อ Funiture เท่านั้น
     - Dimensions: ให้อยู่ใแน Pattern กว้าง x ยาว x สูง
-    - Cost หากไม่มีราคาในข้อมูล ให้ประมาณการ แต่ Total cost ต้องอยู่ในช่วงงบประมาณที่กำหนด
+    - Price หากไม่มีราคาในข้อมูล ให้ประมาณการ แต่ Total Price ต้องอยู่ในช่วงงบประมาณที่กำหนด
     - กรุณาใส่ราคาเป็นตัวเลขเท่านั้น ไม่ต้องใส่สัญลักษณ์สกุลเงิน`;
 
     // Add special requirements if provided
