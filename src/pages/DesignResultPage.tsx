@@ -27,7 +27,10 @@ const DesignResultPage = () => {
       <Navbar />
       <main className="flex-grow container py-12">
         <div className="mx-auto">
-          <DesignResult selectedFurniture={selectedFurniture} />
+          <DesignResult 
+            selectedFurniture={selectedFurniture} 
+            onFurnitureSelected={handleFurnitureSelected}
+          />
         </div>
       </main>
       <Footer />
