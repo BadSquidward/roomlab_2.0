@@ -41,41 +41,41 @@ const FurnitureRecommendations = ({
       setIsLoading(true);
       
       // In a real application, this would be an API call to get recommendations
-      // Here we're generating mock data based on the room type and style
+      // Here we're generating mock data based on the room type and style with images from nocnoc.com
       setTimeout(() => {
         const mockRecommendations: FurnitureItem[] = [
           {
             id: "1",
             name: `${style} Coffee Table`,
-            imageUrl: "https://images.unsplash.com/photo-1565371767810-ef913ac1eef0?q=80&w=500&auto=format&fit=crop",
+            imageUrl: "https://www.nocnoc.com/static/version1715746264/frontend/Nocnoc/base/th_TH/images/category/c-furniture/c-tables-desks/c-coffee-table.jpg",
             description: `Elegant ${style.toLowerCase()} coffee table, perfect for your ${roomType.replace('-', ' ')}`,
             price: 15990
           },
           {
             id: "2",
             name: `${style} Side Table`,
-            imageUrl: "https://images.unsplash.com/photo-1611967164521-abae8fba4668?q=80&w=500&auto=format&fit=crop",
+            imageUrl: "https://www.nocnoc.com/static/version1715746264/frontend/Nocnoc/base/th_TH/images/category/c-furniture/c-tables-desks/c-side-table.jpg",
             description: `Stylish ${style.toLowerCase()} side table to complement your space`,
             price: 8990
           },
           {
             id: "3",
-            name: `${style} Floor Cushion`,
-            imageUrl: "https://images.unsplash.com/photo-1595500381751-d838f72aa196?q=80&w=500&auto=format&fit=crop",
-            description: `Comfortable ${style.toLowerCase()} floor cushion for extra seating`,
-            price: 3990
+            name: `${style} Floor Lamp`,
+            imageUrl: "https://www.nocnoc.com/static/version1715746264/frontend/Nocnoc/base/th_TH/images/category/c-lighting/c-floor-lamps.jpg",
+            description: `Beautiful ${style.toLowerCase()} floor lamp to illuminate your space`,
+            price: 5990
           },
           {
             id: "4",
             name: `${style} Wall Art`,
-            imageUrl: "https://images.unsplash.com/photo-1581337204873-1a08a019d8d1?q=80&w=500&auto=format&fit=crop",
+            imageUrl: "https://www.nocnoc.com/static/version1715746264/frontend/Nocnoc/base/th_TH/images/category/c-home-decor/c-wall-decor/c-wall-art-frames.jpg",
             description: `Beautiful ${style.toLowerCase()} wall art to enhance your ${roomType.replace('-', ' ')}`,
             price: 5990
           },
           {
             id: "5",
             name: `${style} Decorative Plant`,
-            imageUrl: "https://images.unsplash.com/photo-1602923668104-110fa096bb1e?q=80&w=500&auto=format&fit=crop",
+            imageUrl: "https://www.nocnoc.com/static/version1715746264/frontend/Nocnoc/base/th_TH/images/category/c-home-decor/c-artificial-plants-flowers/c-artificial-plants.jpg",
             description: `Stylish ${style.toLowerCase()} plant to add life to your space`,
             price: 2990
           }

@@ -38,14 +38,24 @@ const BillOfQuantities = ({ items, onNavigateToDesign, isLoading = false }: Bill
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-lg">Bill of Quantities</h3>
-        <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={handleContactSales} disabled={isContacting}>
-          {isContacting ? (
-            <Loader2 className="h-3 w-3 animate-spin mr-1" />
-          ) : (
-            <Phone className="h-3 w-3 mr-1" />
-          )}
-          Contact Sales
-        </Button>
+        <div className="flex space-x-2">
+          <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={handleContactSales} disabled={isContacting}>
+            {isContacting ? (
+              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+            ) : (
+              <Phone className="h-3 w-3 mr-1" />
+            )}
+            Contact Sales
+          </Button>
+          <Button
+            onClick={onNavigateToDesign}
+            variant="ghost"
+            size="sm"
+            className="h-8 text-xs"
+          >
+            Create New Design
+          </Button>
+        </div>
       </div>
       
       <div className="border rounded-md overflow-hidden">
@@ -97,14 +107,6 @@ const BillOfQuantities = ({ items, onNavigateToDesign, isLoading = false }: Bill
         <p>Prices are estimates and may vary based on vendor selection and availability.</p>
         <p className="mt-1">All furniture items are referenced from IKEA catalog.</p>
       </div>
-      
-      <Button
-        onClick={onNavigateToDesign}
-        variant="outline"
-        className="w-full mt-4"
-      >
-        Create Another Design
-      </Button>
     </div>
   );
 };

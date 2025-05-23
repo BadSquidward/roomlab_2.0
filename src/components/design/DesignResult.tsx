@@ -489,19 +489,6 @@ const DesignResult = ({ selectedFurniture }: DesignResultProps) => {
         </div>
       </div>
       
-      {/* New Design Button */}
-      <div className="flex justify-center mt-4">
-        <button
-          onClick={clearDesignSession}
-          className="bg-brand-500 hover:bg-brand-600 text-white px-6 py-2 rounded-md font-medium flex items-center gap-2"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 4V2m0 20v-2M6 12H4m16 0h-2m-.364-5.636-1.414 1.414m-12.728 12.728 1.414-1.414m0-12.728-1.414-1.414m12.728 12.728 1.414 1.414" />
-          </svg>
-          Create New Design
-        </button>
-      </div>
-      
       {/* Furniture Recommendations Section */}
       <FurnitureRecommendations
         roomType={designData.roomType}
