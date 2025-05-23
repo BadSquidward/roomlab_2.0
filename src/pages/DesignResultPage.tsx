@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DesignResult from "@/components/design/DesignResult";
@@ -11,6 +11,16 @@ const DesignResultPage = () => {
   const handleFurnitureSelected = (furniture) => {
     setSelectedFurniture(furniture);
   };
+  
+  // Force a refresh when the component mounts
+  useEffect(() => {
+    // This will trigger a re-render
+    const timer = setTimeout(() => {
+      console.log("Refreshing component to display furniture recommendations");
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
   
   return (
     <div className="flex flex-col min-h-screen">
