@@ -3,7 +3,6 @@ import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DesignResult from "@/components/design/DesignResult";
-import FurnitureRecommendations from "@/components/design/FurnitureRecommendations";
 
 const DesignResultPage = () => {
   const [selectedFurniture, setSelectedFurniture] = useState(null);

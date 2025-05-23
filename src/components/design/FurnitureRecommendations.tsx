@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -18,13 +18,15 @@ interface FurnitureRecommendationsProps {
   style: string;
   furnitureList: string[];
   onSelectFurniture: (furniture: FurnitureItem) => void;
+  isBoqGenerated: boolean;
 }
 
 const FurnitureRecommendations = ({ 
   roomType, 
   style, 
   furnitureList, 
-  onSelectFurniture 
+  onSelectFurniture,
+  isBoqGenerated
 }: FurnitureRecommendationsProps) => {
   const { toast } = useToast();
   const [selectedFurniture, setSelectedFurniture] = useState<FurnitureItem | null>(null);
@@ -32,8 +34,10 @@ const FurnitureRecommendations = ({
   const [recommendations, setRecommendations] = useState<FurnitureItem[]>([]);
 
   // Generate furniture recommendations based on room type, style, and existing furniture
-  useState(() => {
+  useEffect(() => {
     const generateRecommendations = () => {
+      if (!isBoqGenerated) return;
+      
       setIsLoading(true);
       
       // In a real application, this would be an API call to get recommendations
@@ -83,7 +87,7 @@ const FurnitureRecommendations = ({
     };
     
     generateRecommendations();
-  }, [roomType, style, furnitureList]);
+  }, [roomType, style, furnitureList, isBoqGenerated]);
 
   const handleSelectFurniture = (furniture: FurnitureItem) => {
     setSelectedFurniture(furniture);
@@ -93,6 +97,10 @@ const FurnitureRecommendations = ({
     });
     onSelectFurniture(furniture);
   };
+
+  if (!isBoqGenerated) {
+    return null;
+  }
 
   return (
     <div className="mt-8 space-y-6">

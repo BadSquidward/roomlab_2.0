@@ -24,6 +24,7 @@ const DesignResult = ({ selectedFurniture }: DesignResultProps) => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingBOQ, setIsLoadingBOQ] = useState(false);
+  const [isBoqGenerated, setIsBoqGenerated] = useState(false);
   const [regenerationComment, setRegenerationComment] = useState("");
   const [designData, setDesignData] = useState({
     ...sampleDesign,
@@ -45,6 +46,7 @@ const DesignResult = ({ selectedFurniture }: DesignResultProps) => {
       try {
         const parsedDesignData = JSON.parse(storedDesignData);
         setDesignData(parsedDesignData);
+        setIsBoqGenerated(true); // If we have design data, BOQ is considered generated
       } catch (error) {
         console.error("Error parsing stored design data:", error);
       }
@@ -135,6 +137,7 @@ const DesignResult = ({ selectedFurniture }: DesignResultProps) => {
           
           setDesignData(updatedDesignData);
           localStorage.setItem('designResult', JSON.stringify(updatedDesignData));
+          setIsBoqGenerated(true); // Set BOQ as generated
         }
         
         // Deduct token
@@ -196,6 +199,7 @@ const DesignResult = ({ selectedFurniture }: DesignResultProps) => {
         return [];
       }
       
+      setIsBoqGenerated(true); // Set BOQ as generated when successful
       return result.furniture || [];
     } catch (error) {
       console.error("Error generating BOQ with Gemini:", error);
@@ -339,6 +343,7 @@ const DesignResult = ({ selectedFurniture }: DesignResultProps) => {
         
         // Now generate BOQ with Gemini
         setIsLoadingBOQ(true);
+        setIsBoqGenerated(false); // Reset BOQ generated state during regeneration
         const boqResult = await generateBOQWithGemini(request);
         setIsLoadingBOQ(false);
         
@@ -351,6 +356,7 @@ const DesignResult = ({ selectedFurniture }: DesignResultProps) => {
           
           setDesignData(finalDesignData);
           localStorage.setItem('designResult', JSON.stringify(finalDesignData));
+          setIsBoqGenerated(true); // Set BOQ as generated when successful
         }
         
         // Deduct 1 token from the user's balance
@@ -502,6 +508,7 @@ const DesignResult = ({ selectedFurniture }: DesignResultProps) => {
         style={designData.style}
         furnitureList={getFurnitureNames()}
         onSelectFurniture={handleSelectFurniture}
+        isBoqGenerated={isBoqGenerated}
       />
     </div>
   );
